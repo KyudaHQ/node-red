@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-aws-ses",
-    "version": "0.0.7",
+    "version": "1.0.0",
     "description": "AWS SES for Node-RED ",
     "main": "index.js",
     "scripts": {

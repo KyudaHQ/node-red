@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-google",
-    "version": "0.0.10",
+    "version": "1.0.0",
     "description": "Google for Node-RED ",
     "main": "index.js",
     "scripts": {

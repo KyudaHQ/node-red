@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-graphql",
-    "version": "0.1.6",
+    "version": "1.0.0",
     "description": "graphql for Node-RED ",
     "main": "index.js",
     "scripts": {
