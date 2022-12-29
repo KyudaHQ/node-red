@@ -1,0 +1,63 @@
+{
+  "name": "@kyuda/node-red",
+  "version": "1.3.3",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon -r esm --watch src server.js server.js",
+    "start": "node -r esm server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@kyuda/node-red-contrib-aws-ses": "^0.0.7",
+    "@kyuda/node-red-contrib-camunda": "^2.2.12",
+    "@kyuda/node-red-contrib-google": "^0.0.10",
+    "@kyuda/node-red-contrib-google-cloud": "^0.0.5",
+    "@kyuda/node-red-contrib-graphql": "^0.1.6",
+    "@kyuda/node-red-contrib-influxdb": "^0.6.3",
+    "@kyuda/node-red-contrib-kafka": "^1.0.7",
+    "@kyuda/node-red-contrib-kyuda": "^0.0.8",
+    "@kyuda/node-red-contrib-logtail": "^1.0.7",
+    "@kyuda/node-red-contrib-minio": "^0.0.12",
+    "@kyuda/node-red-contrib-papertrail": "^0.3.8",
+    "@kyuda/node-red-contrib-rabbitmq-bus": "^0.1.7",
+    "@kyuda/node-red-contrib-salesforce": "^1.0.6",
+    "@kyuda/node-red-contrib-zeebe": "^0.7.10",
+    "axios": "^0.27.2",
+    "bootstrap-vue": "^2.21.2",
+    "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "graphql": "^15.6.0",
+    "graphql-request": "^3.2.0",
+    "jquery": "^3.6.1",
+    "lodash": "^4.17.19",
+    "minio": "^7.0.32",
+    "mongodb": "^3.6.0",
+    "node-fetch": "^2.6.7",
+    "node-red": "^3.0.2",
+    "node-red-contrib-sonos-events": "~1.1.0",
+    "node-red-contrib-uibuilder": "^5.1.1",
+    "node-red-dashboard": "^3.1.7",
+    "node-red-node-swagger": "^0.1.9",
+    "passport": "^0.6.0",
+    "passport-oauth": "^1.0.0",
+    "passport-oauth2": "^1.6.0",
+    "pug": "^3.0.0",
+    "redis": "^3.0.2",
+    "vue": "^2.6.14",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "6aca51fc8d95b22bc4e282f1784757c965efbba5"
+}

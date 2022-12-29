@@ -1,0 +1,33 @@
+{
+  "name": "@kyuda/node-red-contrib-influxdb",
+  "version": "0.6.3",
+  "description": "InfluxDB for Node-RED",
+  "main": "influxdb.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified yet!\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kyuda/node-red.git",
+    "directory": "packages/node-red-contrib-influxdb"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "node-red",
+    "influxdb"
+  ],
+  "node-red": {
+    "nodes": {
+      "influxdb": "src/nodes/influxdb.js"
+    }
+  },
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.33.0",
+    "influx": "^5.9.3",
+    "lodash": "^4.17.21"
+  },
+  "gitHead": "6aca51fc8d95b22bc4e282f1784757c965efbba5"
+}

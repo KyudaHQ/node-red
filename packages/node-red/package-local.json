@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@kyuda/node-red-contrib-aws-ses": "file:../node-red-contrib-aws-ses",
+    "@kyuda/node-red-contrib-camunda": "file:../node-red-contrib-camunda",
+    "@kyuda/node-red-contrib-google": "file:../node-red-contrib-google",
+    "@kyuda/node-red-contrib-google-cloud": "file:../node-red-contrib-google-cloud",
+    "@kyuda/node-red-contrib-graphql": "file:../node-red-contrib-graphql",
+    "@kyuda/node-red-contrib-kafka": "file:../node-red-contrib-kafka",
+    "@kyuda/node-red-contrib-kyuda": "file:../node-red-contrib-kyuda",
+    "@kyuda/node-red-contrib-logtail": "file:../node-red-contrib-logtail",
+    "@kyuda/node-red-contrib-minio": "file:../node-red-contrib-minio",
+    "@kyuda/node-red-contrib-papertrail": "file:../node-red-contrib-papertrail",
+    "@kyuda/node-red-contrib-rabbitmq-bus": "file:../node-red-contrib-rabbitmq-bus",
+    "@kyuda/node-red-contrib-salesforce": "file:../node-red-contrib-salesforce",
+    "@kyuda/node-red-contrib-zeebe": "file:../node-red-contrib-zeebe",
+    "@kyuda/node-red-contrib-influxdb": "file:../node-red-contrib-influxdb"
+  }
+}
