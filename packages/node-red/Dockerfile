@@ -1,6 +1,6 @@
 FROM node:16-alpine
 
-RUN apk add --no-cache build-base git openssh python3 py3-pip
+RUN apk add --no-cache build-base git openssh python3
 RUN mkdir ~/.ssh
 RUN ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 
