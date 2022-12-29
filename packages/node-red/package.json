@@ -1,6 +1,6 @@
 {
   "name": "@kyuda/node-red",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "@kyuda/node-red-contrib-papertrail": "^1.0.0",
     "@kyuda/node-red-contrib-rabbitmq-bus": "^1.0.0",
     "@kyuda/node-red-contrib-salesforce": "^2.0.0",
-    "@kyuda/node-red-contrib-zeebe": "^1.0.2",
+    "@kyuda/node-red-contrib-zeebe": "^1.0.4",
     "axios": "^0.27.2",
     "bootstrap-vue": "^2.21.2",
     "dotenv": "^8.2.0",
