@@ -103,7 +103,7 @@ const settings = {
         header: {
             title: " ",
             image: __dirname + "/assets/logo.svg",
-            url: "hhttps://www.kyuda.io/products/node-red"
+            url: "hhttps://www.kyuda.io"
         },
         deployButton: {
             type: "simple",
@@ -116,7 +116,7 @@ const settings = {
             "menu-item-keyboard-shortcuts": false,
             "menu-item-help": {
                 label: "Kyuda",
-                url: "https://www.kyuda.io/products/node-red"
+                url: "https://www.kyuda.io"
             }
         },
         userMenu: true,

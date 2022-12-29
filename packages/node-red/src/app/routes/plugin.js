@@ -30,7 +30,7 @@ router.use(userInViews());
 // });
 
 // router.get('/documentation', function (req, res) {
-//     res.redirect('https://www.kyuda.io/products/node-red')
+//     res.redirect('https://www.kyuda.io')
 // });
 
 module.exports = router;

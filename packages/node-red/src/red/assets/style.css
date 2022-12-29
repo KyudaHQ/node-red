@@ -35,10 +35,10 @@ html {
   border: 1px solid #323232;
 }
 
-#red-ui-header ul.red-ui-menu-dropdown>li>a:hover,
-#red-ui-header ul.red-ui-menu-dropdown>li>a:focus,
-#red-ui-header ul.red-ui-menu-dropdown>li:hover>a,
-#red-ui-header ul.red-ui-menu-dropdown>li:focus>a {
+#red-ui-header ul.red-ui-menu-dropdown > li > a:hover,
+#red-ui-header ul.red-ui-menu-dropdown > li > a:focus,
+#red-ui-header ul.red-ui-menu-dropdown > li:hover > a,
+#red-ui-header ul.red-ui-menu-dropdown > li:focus > a {
   background: #f4f4f5 !important;
 }
 
@@ -46,7 +46,7 @@ html {
   color: #1f2f3d;
 }
 
-#red-ui-header #usermenu-item-username>.red-ui-menu-label {
+#red-ui-header #usermenu-item-username > .red-ui-menu-label {
   color: #1f2f3d;
 }
 
@@ -61,29 +61,29 @@ html {
   margin: 0;
 }
 
-#red-ui-header .button-group>a {
+#red-ui-header .button-group > a {
   line-height: 20px;
 }
 
 #red-ui-header .red-ui-deploy-button {
   color: #fff;
-  background-color: rgb(249 168 212);
   border: 1px solid rgb(236 72 153);
+  background: rgb(236 72 153);
   border-color: rgb(236 72 153);
   border-radius: 0px;
   text-transform: uppercase;
 }
 
 #red-ui-header .red-ui-deploy-button:hover {
-  background: rgb(236 72 153);
-  border-color: rgb(236 72 153);
   color: #fff;
+  background-color: rgb(131 24 67);
+  border-color: rgb(131 24 67);
 }
 
 #red-ui-header #red-ui-header-button-deploy.disabled {
   color: #fff;
-  background-color: rgb(190 24 93);
-  border-color: rgb(190 24 93);
+  background-color: #c7c7c7;
+  border-color: #aaa;
 }
 
 /* Node Palette */
@@ -102,11 +102,11 @@ html {
 
 /* Node UI */
 .red-ui-flow-node rect {
-  rx: 0
+  rx: 0;
 }
 
 .red-ui-flow-node-icon-shade {
-  fill-opacity: .1;
+  fill-opacity: 0.1;
 }
 
 /* Sidebar */
@@ -116,12 +116,12 @@ html {
 }
 
 /* LAB */
-.lab-button {
+.kyuda-button {
   display: inline-block;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  background: #C7C7C7;
+  background: #c7c7c7;
   border: 1px solid #aaa;
   border-color: #aaa;
   color: #606266;
@@ -130,7 +130,7 @@ html {
   box-sizing: border-box;
   outline: none;
   margin: 0;
-  transition: .1s;
+  transition: 0.1s;
   font-weight: 500;
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -141,13 +141,13 @@ html {
   text-transform: uppercase;
 }
 
-.lab-button--primary {
+.kyuda-button--primary {
   color: #fff;
-  background-color: #C7C7C7;
+  background-color: #c7c7c7;
   border-color: #aaa;
 }
 
-.lab-button--primary:hover {
+.kyuda-button--primary:hover {
   background: rgb(236 72 153);
   border-color: rgb(236 72 153);
   color: #fff;

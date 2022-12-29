@@ -24,10 +24,19 @@ These nodes require NodeJS version 16 or more recent.
 
 ## Quick Start
 
- * `docker run -p 1880:1880 --env-file ./.env kyuda/node-red:2.0.0`
+The following environment variables are required to run:
+ * AUTH0_DOMAIN
+ * AUTH0_CLIENT_ID
+ * AUTH0_CLIENT_SECRET
+ * AUTH0_CALLBACK_URL
+ * FLOW_UID
+
+
+ * `docker run -p 1880:1880 --env-file ./packages/node-red/.env kyuda/node-red:2.0.0`
 
 ## Developers
 
+ * `npm run dev`
  * `npx lerna publish`
  * `npx lerna publish --force-publish`
  * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:latest ./packages/node-red`
