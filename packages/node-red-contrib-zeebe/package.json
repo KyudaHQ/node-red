@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-zeebe",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Zeebe nodes for Node-RED ",
     "main": "index.js",
     "scripts": {
@@ -11,6 +11,9 @@
         "type": "git",
         "url": "https://github.com/kyuda/node-red.git",
         "directory": "packages/node-red-contrib-zeebe"
+    },
+    "publishConfig": {
+        "access": "public"
     },
     "author": "pedesen",
     "license": "MIT",

@@ -24,14 +24,14 @@ These nodes require NodeJS version 16 or more recent.
 
 ## Quick Start
 
- * `docker run -p 1880:1880 --env-file ./.env kyuda/node-red:1.3.3`
+ * `docker run -p 1880:1880 --env-file ./.env kyuda/node-red:2.0.0`
 
 ## Developers
 
  * `npx lerna publish`
  * `npx lerna publish --force-publish`
  * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:latest ./packages/node-red`
- * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:1.3.3 ./packages/node-red`
+ * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:2.0.0 ./packages/node-red`
 
 ## Authors
 
