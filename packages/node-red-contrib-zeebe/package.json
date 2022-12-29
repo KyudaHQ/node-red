@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-zeebe",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Zeebe nodes for Node-RED ",
     "main": "index.js",
     "scripts": {
@@ -62,5 +62,5 @@
             "prettier --write"
         ]
     },
-    "gitHead": "ce5337230f631bff7ab5491728feaf4ee41e0bfc"
+    "gitHead": "68d37ce08d069417884032b0f3cab4d19eff02ba"
 }
