@@ -4,22 +4,20 @@
     color: "#fff",
     defaults: {
       name: { value: '' },
-      kyuda: { type: 'kyuda-config', required: true },
       pipelineUid: { value: '', required: true },
     },
     inputs: 1,
     outputs: 1,
     icon: 'kyuda.png',
     label: function () {
-      return this.name || 'Kyuda Trigger Pipeline';
+      return this.name || 'Trigger Pipeline';
     },
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
     },
-    paletteLabel: 'trigger pipeline',
+    paletteLabel: 'pipeline',
     oneditprepare: function () {
       var node = this;
-      var kyudaNode = RED.nodes.node(this.kyuda);
       var pathname = document.location.pathname;
       if (pathname.slice(-1) != "/") {
         pathname += "/";
@@ -27,9 +25,9 @@
 
       //////////////////////////////
 
-      function getPipelines(organisationUid) {
+      function getPipelines() {
         $('#node-input-pipelineUid').html('');
-        $.getJSON(pathname + 'kyuda/credentials/' + kyudaNode.id + '/pipelines?organisation=' + organisationUid, function (data) {
+        $.getJSON(pathname + 'kyuda/pipelines', function (data) {
           data.forEach(function (pipeline) {
             if (node.pipelineUid === pipeline.uid) {
               $('#node-input-pipelineUid').append(`<option value="${pipeline.uid}" selected>${pipeline.name} (${pipeline.uid})</option>`);
@@ -43,13 +41,9 @@
       //////////////////////////////
 
       $("#node-reload").mousedown(function () {
-        if (kyudaNode && kyudaNode.organisationUid) {
-          getPipelines(kyudaNode.organisationUid);
-        }
+        getPipelines();
       })
-      if (kyudaNode && kyudaNode.organisationUid) {
-        getPipelines(kyudaNode.organisationUid);
-      }
+      getPipelines();
 
     }
   });
@@ -59,10 +53,6 @@
     <div class="form-row">
       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-      <label for="node-input-kyuda"><i class="icon-tag"></i> Kyuda</label>
-      <input type="text" id="node-input-kyuda" placeholder="Kyuda">
     </div>
     <div class="form-row">
       <label for="node-input-pipelineUid">Pipeline</label>

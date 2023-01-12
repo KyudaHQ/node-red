@@ -4,22 +4,20 @@
     color: "#fff",
     defaults: {
       name: { value: '' },
-      kyuda: { type: 'kyuda-config', required: true },
       sourceUid: { value: '', required: true },
     },
     inputs: 1,
     outputs: 1,
     icon: 'kyuda.png',
     label: function () {
-      return this.name || 'Kyuda Trigger Source';
+      return this.name || 'Trigger Source';
     },
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
     },
-    paletteLabel: 'trigger source',
+    paletteLabel: 'source',
     oneditprepare: function () {
       var node = this;
-      var kyudaNode = RED.nodes.node(this.kyuda);
       var pathname = document.location.pathname;
       if (pathname.slice(-1) != "/") {
         pathname += "/";
@@ -27,9 +25,9 @@
 
       //////////////////////////////
 
-      function getSources(organisationUid) {
+      function getSources() {
         $('#node-input-sourceUid').html('');
-        $.getJSON(pathname + 'kyuda/credentials/' + kyudaNode.id + '/sources?organisation=' + organisationUid, function (data) {
+        $.getJSON(pathname + 'kyuda/sources', function (data) {
           data.forEach(function (source) {
             if (node.sourceUid === source.uid) {
               $('#node-input-sourceUid').append(`<option value="${source.uid}" selected>${source.name} (${source.uid})</option>`);
@@ -43,13 +41,9 @@
       //////////////////////////////
 
       $("#node-reload").mousedown(function () {
-        if (kyudaNode && kyudaNode.organisationUid) {
-          getSources(kyudaNode.organisationUid);
-        }
+        getSources();
       })
-      if (kyudaNode && kyudaNode.organisationUid) {
-        getSources(kyudaNode.organisationUid);
-      }
+      getSources();
 
     }
   });
@@ -59,10 +53,6 @@
     <div class="form-row">
       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-      <label for="node-input-kyuda"><i class="icon-tag"></i> Kyuda</label>
-      <input type="text" id="node-input-kyuda" placeholder="Kyuda">
     </div>
     <div class="form-row">
       <label for="node-input-sourceUid">Source</label>

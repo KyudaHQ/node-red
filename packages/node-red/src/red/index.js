@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
-
 const logger = require('winston').loggers.get('server');
 
 function Profile(data, raw) {
@@ -65,39 +64,39 @@ Strategy.prototype.userProfile = function (accessToken, done) {
 };
 
 const settings = {
-    httpAdminRoot: "/builder/",
+    httpAdminRoot: "/editor/",
     httpNodeRoot: "/api/",
     flowFile: 'flows.json',
     userDir: "./",
     credentialSecret: 'secret',
-    adminAuth: {
-        type: "strategy",
-        strategy: {
-            name: "oauth2",
-            label: 'Sign in with Auth0',
-            icon: "fa-user",
-            strategy: Strategy,
-            options: {
-                authorizationURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/authorize` : `https://kyuda.eu.auth0.com/authorize`,
-                tokenURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/oauth/token` : `https://kyuda.eu.auth0.com/oauth/token`,
-                userInfoURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/userinfo` : `https://kyuda.eu.auth0.com/userinfo`,
-                clientID: process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID : "rQEYMY5y2JIp9prmJ9tj5pqH40H3yeMx",
-                callbackURL: process.env.AUTH0_CALLBACK_URL ? process.env.AUTH0_CALLBACK_URL : "http://localhost:1880/builder/auth/strategy/callback",
-                scope: "openid email profile offline_access",
-                state: true,
-                pkce: true,
-                verify: function (accessToken, refreshToken, extraParams, profile, done) {
-                    const user = {
-                        username: _.get(_.first(profile.emails), 'value', profile.id)
-                    }
-                    done(null, user);
-                }
-            },
-        },
-        users: function (user) {
-            return Promise.resolve({ username: user, permissions: "*" });
-        },
-    },
+    // adminAuth: {
+    //     type: "strategy",
+    //     strategy: {
+    //         name: "oauth2",
+    //         label: 'Sign in with Auth0',
+    //         icon: "fa-user",
+    //         strategy: Strategy,
+    //         options: {
+    //             authorizationURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/authorize` : `https://kyuda.eu.auth0.com/authorize`,
+    //             tokenURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/oauth/token` : `https://kyuda.eu.auth0.com/oauth/token`,
+    //             userInfoURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/userinfo` : `https://kyuda.eu.auth0.com/userinfo`,
+    //             clientID: process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID : "rQEYMY5y2JIp9prmJ9tj5pqH40H3yeMx",
+    //             callbackURL: process.env.AUTH0_CALLBACK_URL ? process.env.AUTH0_CALLBACK_URL : "http://localhost:1880/builder/auth/strategy/callback",
+    //             scope: "openid email profile offline_access",
+    //             state: true,
+    //             pkce: true,
+    //             verify: function (accessToken, refreshToken, extraParams, profile, done) {
+    //                 const user = {
+    //                     username: _.get(_.first(profile.emails), 'value', profile.id)
+    //                 }
+    //                 done(null, user);
+    //             }
+    //         },
+    //     },
+    //     users: function (user) {
+    //         return Promise.resolve({ username: user, permissions: "*" });
+    //     },
+    // },
     functionGlobalContext: {},
     contextStorage: {
         default: {
@@ -123,7 +122,7 @@ const settings = {
     // },
     storageModule: require("./storage/kyuda"),
     storageModuleSettings: {
-        token: process.env.KYUDA_FLOW_TOKEN
+        KYUDA_FLOW_TOKEN: process.env.KYUDA_FLOW_TOKEN
     },
     logging: {
         console: {
@@ -144,14 +143,14 @@ const settings = {
         template: {
             swagger: "2.0",
             info: {
-                title: "Builder",
+                title: "Kyuda Flow",
                 version: "0.0.1"
             }
         }
     },
     editorTheme: {
         page: {
-            title: "Builder",
+            title: "Kyuda Flow",
             favicon: __dirname + "/assets/logo.svg",
             css: [
                 __dirname + "/assets/camphor.css",
@@ -217,9 +216,9 @@ const settings = {
 
 var RED = require("node-red");
 
-RED.events.on('runtime-event', async (event) => {
-    logger.debug(event.id)
-})
+// RED.events.on('runtime-event', async (event) => {
+//     logger.debug(event.id)
+// })
 
 var secured = require('../app/middleware/secured');
 //router.use(secured());

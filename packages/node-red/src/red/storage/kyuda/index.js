@@ -2,21 +2,21 @@ const logger = require('winston').loggers.get('storage');
 const _ = require("lodash");
 const fetch = require('node-fetch');
 
-let token = null;
+let KYUDA_FLOW_TOKEN = null;
 
-function stringify(data) {
-    return JSON.stringify(data);
-}
-function parse(data) {
-    return JSON.parse(data);
-}
+// function stringify(data) {
+//     return JSON.stringify(data);
+// }
+// function parse(data) {
+//     return JSON.parse(data);
+// }
 
 export async function init(settings, _runtime) {
-    token = settings.storageModuleSettings.token;
-    if (!token) {
-        throw new Error("token is required");
+    KYUDA_FLOW_TOKEN = settings.storageModuleSettings.KYUDA_FLOW_TOKEN;
+    if (!KYUDA_FLOW_TOKEN) {
+        throw new Error("KYUDA_FLOW_TOKEN is required");
     }
-    logger.info(`token ${token}`);
+    logger.info(`KYUDA_FLOW_TOKEN ${KYUDA_FLOW_TOKEN}`);
     return await Promise.resolve();
 }
 
@@ -24,7 +24,7 @@ export async function getFlows() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}` };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/get-flows`, { method: 'POST', headers });
         if (response.status === 200) {
             const data = await response.json();
@@ -42,7 +42,7 @@ export async function saveFlows(flows) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
-        const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}`, "Content-Type": "application/json" };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/save-flows`, { method: 'POST', body: JSON.stringify(flows), headers });
         const data = await response.text();
         return data
@@ -55,7 +55,7 @@ export async function getCredentials() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}` };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/get-credentials`, { method: 'POST', headers });
         if (response.status === 200) {
             const data = await response.json();
@@ -73,7 +73,7 @@ export async function saveCredentials(credentials) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
-        const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}`, "Content-Type": "application/json" };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/save-credentials`, { method: 'POST', body: JSON.stringify(credentials), headers });
         const data = await response.json();
         return data
@@ -86,7 +86,7 @@ export async function getSettings() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}` };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/get-settings`, { method: 'POST', headers });
         if (response.status === 200) {
             const data = await response.json();
@@ -104,7 +104,7 @@ export async function saveSettings(settings) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
-        const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}`, "Content-Type": "application/json" };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/save-settings`, { method: 'POST', body: JSON.stringify(settings), headers });
         const data = await response.json();
         return data
@@ -117,7 +117,7 @@ export async function getSessions() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}` };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/get-sessions`, { method: 'POST', headers });
         if (response.status === 200) {
             const data = await response.json();
@@ -135,7 +135,7 @@ export async function saveSessions(sessions) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
-        const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+        const headers = { Authorization: `Bearer ${KYUDA_FLOW_TOKEN}`, "Content-Type": "application/json" };
         const response = await fetch(`https://api.kyuda.io/v1/flows-api/save-sessions`, { method: 'POST', body: JSON.stringify(sessions), headers });
         const data = await response.json();
         return data
