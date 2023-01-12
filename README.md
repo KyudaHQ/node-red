@@ -25,12 +25,7 @@ These nodes require NodeJS version 16 or more recent.
 ## Quick Start
 
 The following environment variables are required to run:
- * AUTH0_DOMAIN
- * AUTH0_CLIENT_ID
- * AUTH0_CLIENT_SECRET
- * AUTH0_CALLBACK_URL
- * FLOW_UID
-
+ * KYUDA_FLOW_TOKEN
 
  * `docker run -p 1880:1880 --env-file ./packages/node-red/.env kyuda/node-red:2.0.0`
 

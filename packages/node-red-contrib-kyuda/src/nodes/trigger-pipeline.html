@@ -1,22 +1,22 @@
 <script type="text/javascript">
-  RED.nodes.registerType('kyuda-trigger-source', {
+  RED.nodes.registerType('kyuda-trigger-pipeline', {
     category: 'kyuda',
     color: "#fff",
     defaults: {
       name: { value: '' },
       kyuda: { type: 'kyuda-config', required: true },
-      sourceUid: { value: '', required: true },
+      pipelineUid: { value: '', required: true },
     },
     inputs: 1,
     outputs: 1,
     icon: 'kyuda.png',
     label: function () {
-      return this.name || 'Kyuda Trigger Source';
+      return this.name || 'Kyuda Trigger Pipeline';
     },
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
     },
-    paletteLabel: 'trigger source',
+    paletteLabel: 'trigger pipeline',
     oneditprepare: function () {
       var node = this;
       var kyudaNode = RED.nodes.node(this.kyuda);
@@ -27,14 +27,14 @@
 
       //////////////////////////////
 
-      function getSources(organisationUid) {
-        $('#node-input-sourceUid').html('');
-        $.getJSON(pathname + 'kyuda/credentials/' + kyudaNode.id + '/sources?organisation=' + organisationUid, function (data) {
-          data.forEach(function (source) {
-            if (node.sourceUid === source.uid) {
-              $('#node-input-sourceUid').append(`<option value="${source.uid}" selected>${source.name} (${source.uid})</option>`);
+      function getPipelines(organisationUid) {
+        $('#node-input-pipelineUid').html('');
+        $.getJSON(pathname + 'kyuda/credentials/' + kyudaNode.id + '/pipelines?organisation=' + organisationUid, function (data) {
+          data.forEach(function (pipeline) {
+            if (node.pipelineUid === pipeline.uid) {
+              $('#node-input-pipelineUid').append(`<option value="${pipeline.uid}" selected>${pipeline.name} (${pipeline.uid})</option>`);
             } else {
-              $('#node-input-sourceUid').append(`<option value="${source.uid}">${source.name} (${source.uid})</option>`);
+              $('#node-input-pipelineUid').append(`<option value="${pipeline.uid}">${pipeline.name} (${pipeline.uid})</option>`);
             }
           });
         });
@@ -44,18 +44,18 @@
 
       $("#node-reload").mousedown(function () {
         if (kyudaNode && kyudaNode.organisationUid) {
-          getSources(kyudaNode.organisationUid);
+          getPipelines(kyudaNode.organisationUid);
         }
       })
       if (kyudaNode && kyudaNode.organisationUid) {
-        getSources(kyudaNode.organisationUid);
+        getPipelines(kyudaNode.organisationUid);
       }
 
     }
   });
 </script>
 
-<script type="text/x-red" data-template-name="kyuda-trigger-source">
+<script type="text/x-red" data-template-name="kyuda-trigger-pipeline">
     <div class="form-row">
       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
@@ -65,8 +65,8 @@
       <input type="text" id="node-input-kyuda" placeholder="Kyuda">
     </div>
     <div class="form-row">
-      <label for="node-input-sourceUid">Source</label>
-      <select id="node-input-sourceUid" style="width: 70%;"></select>
+      <label for="node-input-pipelineUid">Pipeline</label>
+      <select id="node-input-pipelineUid" style="width: 70%;"></select>
     </div>
     <div class="form-row">
       <label>&nbsp;</label>
@@ -74,6 +74,6 @@
     </div>
   </script>
 
-<script type="text/x-red" data-help-name="kyuda-trigger-source" data-lang="en-US">
+<script type="text/x-red" data-help-name="kyuda-trigger-pipeline" data-lang="en-US">
 
   </script>

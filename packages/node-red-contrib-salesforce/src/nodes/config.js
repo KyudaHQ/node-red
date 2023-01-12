@@ -72,7 +72,6 @@ module.exports = function (RED) {
         // Refresh accessToken using refreshToken
         conn.on("refresh", function (accessToken, res) {
           console.log("oauthRefresh")
-          console.log('accessToken', accessToken)
           credentials.accessToken = accessToken;
           RED.nodes.addCredentials(node.id, credentials);
         });

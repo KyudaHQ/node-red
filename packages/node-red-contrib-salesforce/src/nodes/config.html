@@ -59,7 +59,7 @@
       }
 
       if (this.credentials.userId) {
-        updateForceUserId(this.userId);
+        updateForceUserId(this.credentials.userId);
       } else {
         $("#node-config-force-client-keys").show();
         $("#node-config-force").hide();

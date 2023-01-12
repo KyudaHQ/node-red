@@ -40,7 +40,8 @@
     "node-red": {
         "nodes": {
             "kyuda-config": "src/nodes/config.js",
-            "kyuda-trigger-source": "src/nodes/trigger-source.js"
+            "kyuda-trigger-source": "src/nodes/trigger-source.js",
+            "kyuda-trigger-pipeline": "src/nodes/trigger-pipeline.js"
         }
     },
     "jest": {

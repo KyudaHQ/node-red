@@ -1,9 +1,68 @@
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
-const Global = require('./global.js');
 
 const logger = require('winston').loggers.get('server');
+
+function Profile(data, raw) {
+    this.displayName = data.name;
+    this.id = data.user_id || data.sub;
+    this.user_id = this.id;
+
+    if (data.identities) {
+        this.provider = data.identities[0].provider;
+    } else if (typeof this.id === 'string' && this.id.indexOf('|') > -1) {
+        this.provider = this.id.split('|')[0];
+    }
+
+    this.name = {
+        familyName: data.family_name,
+        givenName: data.given_name
+    };
+
+    if (data.emails) {
+        this.emails = data.emails.map(function (email) {
+            return { value: email };
+        });
+    } else if (data.email) {
+        this.emails = [{
+            value: data.email
+        }];
+    }
+
+    ['picture',
+        'locale',
+        'nickname',
+        'gender',
+        'identities'].filter(function (k) {
+            return k in data;
+        }).forEach(function (k) {
+            this[k] = data[k];
+        }.bind(this));
+
+    this._json = data;
+    this._raw = raw;
+}
+
+const Strategy = require("./auth/oauth2").Strategy;
+Strategy.prototype.authorizationParams = function (options) {
+    return {
+        audience: "https://kyuda.io/jwt/claims"
+    }
+};
+Strategy.prototype.userProfile = function (accessToken, done) {
+    this._oauth2.get(this._userInfoURL, accessToken, function (err, body, res) {
+        if (err) { return done(new Error('failed to fetch user profile', err)); }
+        try {
+            var json = JSON.parse(body);
+            var profile = new Profile(json, body);
+
+            done(null, profile);
+        } catch (e) {
+            done(e);
+        }
+    });
+};
 
 const settings = {
     httpAdminRoot: "/builder/",
@@ -14,18 +73,20 @@ const settings = {
     adminAuth: {
         type: "strategy",
         strategy: {
-            name: "auth0",
+            name: "oauth2",
             label: 'Sign in with Auth0',
             icon: "fa-user",
-            strategy: require("./auth/auth0").Strategy,
+            strategy: Strategy,
             options: {
-                domain: process.env.AUTH0_DOMAIN,
-                clientID: process.env.AUTH0_CLIENT_ID,
-                clientSecret: process.env.AUTH0_CLIENT_SECRET,
-                callbackURL: process.env.AUTH0_CALLBACK_URL,
+                authorizationURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/authorize` : `https://kyuda.eu.auth0.com/authorize`,
+                tokenURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/oauth/token` : `https://kyuda.eu.auth0.com/oauth/token`,
+                userInfoURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/userinfo` : `https://kyuda.eu.auth0.com/userinfo`,
+                clientID: process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID : "rQEYMY5y2JIp9prmJ9tj5pqH40H3yeMx",
+                callbackURL: process.env.AUTH0_CALLBACK_URL ? process.env.AUTH0_CALLBACK_URL : "http://localhost:1880/builder/auth/strategy/callback",
+                scope: "openid email profile offline_access",
+                state: true,
+                pkce: true,
                 verify: function (accessToken, refreshToken, extraParams, profile, done) {
-                    const global = Global.getInstance();
-                    global.setAccessToken(accessToken);
                     const user = {
                         username: _.get(_.first(profile.emails), 'value', profile.id)
                     }
@@ -62,7 +123,7 @@ const settings = {
     // },
     storageModule: require("./storage/kyuda"),
     storageModuleSettings: {
-        flow_uid: process.env.FLOW_UID,
+        token: process.env.KYUDA_FLOW_TOKEN
     },
     logging: {
         console: {

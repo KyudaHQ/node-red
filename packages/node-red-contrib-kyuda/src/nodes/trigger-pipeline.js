@@ -3,7 +3,7 @@ const status = require('../util/nodeStatus');
 
 module.exports = function (RED) {
 
-  function KyudaTriggerSourceNode(config) {
+  function KyudaTriggerPipelineNode(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
@@ -13,7 +13,7 @@ module.exports = function (RED) {
     node.on('input', async function (msg) {
       try {
         status.info(node, 'processing');
-        const result = await node.kyudaConfig.triggerSource(config.sourceUid, msg.payload)
+        const result = await node.kyudaConfig.triggerPipeline(config.pipelineUid, msg.payload)
         msg.payload = result;
         status.clear(node);
         return node.send(msg);
@@ -24,5 +24,5 @@ module.exports = function (RED) {
     })
   }
 
-  RED.nodes.registerType('kyuda-trigger-source', KyudaTriggerSourceNode);
+  RED.nodes.registerType('kyuda-trigger-pipeline', KyudaTriggerPipelineNode);
 }
