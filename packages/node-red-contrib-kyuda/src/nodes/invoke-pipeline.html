@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  RED.nodes.registerType('kyuda-trigger-pipeline', {
+  RED.nodes.registerType('kyuda-invoke-pipeline', {
     category: 'kyuda',
     color: "#fff",
     defaults: {
@@ -10,7 +10,7 @@
     outputs: 1,
     icon: 'kyuda.png',
     label: function () {
-      return this.name || 'Trigger Pipeline';
+      return this.name || 'Invoke Pipeline';
     },
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
@@ -49,7 +49,7 @@
   });
 </script>
 
-<script type="text/x-red" data-template-name="kyuda-trigger-pipeline">
+<script type="text/x-red" data-template-name="kyuda-invoke-pipeline">
     <div class="form-row">
       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
@@ -64,6 +64,6 @@
     </div>
   </script>
 
-<script type="text/x-red" data-help-name="kyuda-trigger-pipeline" data-lang="en-US">
+<script type="text/x-red" data-help-name="kyuda-invoke-pipeline" data-lang="en-US">
 
   </script>

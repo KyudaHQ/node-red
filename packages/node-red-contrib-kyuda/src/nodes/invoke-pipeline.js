@@ -6,10 +6,11 @@ const KYUDA_FLOW_TOKEN = process.env.KYUDA_FLOW_TOKEN;
 
 module.exports = function (RED) {
 
-  function triggerSource(source_uid, pipeline_uid, payload) {
-    return fetch(`https://api.kyuda.io/v1/flows-api/trigger-source`, {
+  function invokePipeline(source_uid, pipeline_uid, payload) {
+    return fetch(`https://api.kyuda.io/v1/flows-api/invoke-pipeline`, {
       method: 'post',
       body: JSON.stringify({
+        pipeline_uid,
         source_uid,
         event: payload,
         control: {}
@@ -19,14 +20,14 @@ module.exports = function (RED) {
       .then(response => response.json());
   }
 
-  function KyudaTriggerSourceNode(config) {
+  function KyudaInvokePipelineNode(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
     node.on('input', async function (msg) {
       try {
         status.info(node, 'processing');
-        const result = await triggerSource(node.id, config.sourceUid, msg.payload)
+        const result = await invokePipeline(node.id, config.pipelineUid, msg.payload)
         msg.payload = result;
         status.clear(node);
         return node.send(msg);
@@ -37,10 +38,10 @@ module.exports = function (RED) {
     })
   }
 
-  RED.nodes.registerType('kyuda-trigger-source', KyudaTriggerSourceNode);
+  RED.nodes.registerType('kyuda-invoke-pipeline', KyudaInvokePipelineNode);
 
-  RED.httpAdmin.get('/kyuda/sources', async function (req, res) {
-    return fetch(`https://api.kyuda.io/v1/flows-api/get-sources`, {
+  RED.httpAdmin.get('/kyuda/pipelines', async function (req, res) {
+    return fetch(`https://api.kyuda.io/v1/flows-api/get-pipelines`, {
       method: 'get',
       headers: { 'Authorization': `Bearer ${KYUDA_FLOW_TOKEN}` }
     })
@@ -49,4 +50,5 @@ module.exports = function (RED) {
         return res.json(json)
       })
   })
+
 }

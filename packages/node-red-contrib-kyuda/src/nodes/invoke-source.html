@@ -1,0 +1,69 @@
+<script type="text/javascript">
+  RED.nodes.registerType('kyuda-invoke-source', {
+    category: 'kyuda',
+    color: "#fff",
+    defaults: {
+      name: { value: '' },
+      sourceUid: { value: '', required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'kyuda.png',
+    label: function () {
+      return this.name || 'Invoke Source';
+    },
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : '';
+    },
+    paletteLabel: 'source',
+    oneditprepare: function () {
+      var node = this;
+      var pathname = document.location.pathname;
+      if (pathname.slice(-1) != "/") {
+        pathname += "/";
+      }
+
+      //////////////////////////////
+
+      function getSources() {
+        $('#node-input-sourceUid').html('');
+        $.getJSON(pathname + 'kyuda/sources', function (data) {
+          data.forEach(function (source) {
+            if (node.sourceUid === source.uid) {
+              $('#node-input-sourceUid').append(`<option value="${source.uid}" selected>${source.name} (${source.uid})</option>`);
+            } else {
+              $('#node-input-sourceUid').append(`<option value="${source.uid}">${source.name} (${source.uid})</option>`);
+            }
+          });
+        });
+      }
+
+      //////////////////////////////
+
+      $("#node-reload").mousedown(function () {
+        getSources();
+      })
+      getSources();
+
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="kyuda-invoke-source">
+    <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+      <label for="node-input-sourceUid">Source</label>
+      <select id="node-input-sourceUid" style="width: 70%;"></select>
+    </div>
+    <div class="form-row">
+      <label>&nbsp;</label>
+      <a class="btn" id="node-reload" href="#"">Reload</a>
+    </div>
+  </script>
+
+<script type="text/x-red" data-help-name="kyuda-invoke-source" data-lang="en-US">
+
+  </script>

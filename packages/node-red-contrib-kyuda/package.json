@@ -39,8 +39,9 @@
     },
     "node-red": {
         "nodes": {
-            "kyuda-trigger-source": "src/nodes/trigger-source.js",
-            "kyuda-trigger-pipeline": "src/nodes/trigger-pipeline.js"
+            "kyuda-execute-source": "src/nodes/execute-source.js",
+            "kyuda-invoke-source": "src/nodes/invoke-source.js",
+            "kyuda-invoke-pipeline": "src/nodes/invoke-pipeline.js"
         }
     },
     "jest": {
