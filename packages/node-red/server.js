@@ -54,6 +54,13 @@ let RED = require('./src/red/index');
 var pluginRouter = require('./src/app/routes/plugin');
 var redRouter = RED.router;
 
+app.get('/', function (req, res, next) {
+    res.status(200).send('flow')
+})
+app.get('/healthz', function (req, res, next) {
+    res.status(200).send('ok')
+})
+
 app.use("/public", express.static("./src/app/public"));
 //app.use('/auth', authRouter);
 app.use('/plugin', pluginRouter);

@@ -69,34 +69,6 @@ const settings = {
     flowFile: 'flows.json',
     userDir: "./",
     credentialSecret: 'secret',
-    // adminAuth: {
-    //     type: "strategy",
-    //     strategy: {
-    //         name: "oauth2",
-    //         label: 'Sign in with Auth0',
-    //         icon: "fa-user",
-    //         strategy: Strategy,
-    //         options: {
-    //             authorizationURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/authorize` : `https://kyuda.eu.auth0.com/authorize`,
-    //             tokenURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/oauth/token` : `https://kyuda.eu.auth0.com/oauth/token`,
-    //             userInfoURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/userinfo` : `https://kyuda.eu.auth0.com/userinfo`,
-    //             clientID: process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID : "rQEYMY5y2JIp9prmJ9tj5pqH40H3yeMx",
-    //             callbackURL: process.env.AUTH0_CALLBACK_URL ? process.env.AUTH0_CALLBACK_URL : "http://localhost:1880/builder/auth/strategy/callback",
-    //             scope: "openid email profile offline_access",
-    //             state: true,
-    //             pkce: true,
-    //             verify: function (accessToken, refreshToken, extraParams, profile, done) {
-    //                 const user = {
-    //                     username: _.get(_.first(profile.emails), 'value', profile.id)
-    //                 }
-    //                 done(null, user);
-    //             }
-    //         },
-    //     },
-    //     users: function (user) {
-    //         return Promise.resolve({ username: user, permissions: "*" });
-    //     },
-    // },
     functionGlobalContext: {},
     contextStorage: {
         default: {
@@ -213,6 +185,46 @@ const settings = {
         }
     }
 };
+
+if (process.env.AUTH0_ENABLED === 'true') {
+    settings.adminAuth = {
+        type: "strategy",
+        strategy: {
+            name: "oauth2",
+            label: 'Sign in with Auth0',
+            icon: "fa-user",
+            strategy: Strategy,
+            options: {
+                authorizationURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/authorize` : `https://kyuda.eu.auth0.com/authorize`,
+                tokenURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/oauth/token` : `https://kyuda.eu.auth0.com/oauth/token`,
+                userInfoURL: process.env.AUTH0_DOMAIN ? `https://${process.env.AUTH0_DOMAIN}/userinfo` : `https://kyuda.eu.auth0.com/userinfo`,
+                clientID: process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID : "rQEYMY5y2JIp9prmJ9tj5pqH40H3yeMx",
+                callbackURL: process.env.AUTH0_CALLBACK_URL ? process.env.AUTH0_CALLBACK_URL : "http://localhost:1880/editor/auth/strategy/callback",
+                scope: "openid email profile offline_access",
+                state: true,
+                pkce: true,
+                verify: function (accessToken, refreshToken, extraParams, profile, done) {
+                    const user = {
+                        username: _.get(_.first(profile.emails), 'value', profile.id)
+                    }
+                    done(null, user);
+                }
+            },
+        },
+        users: function (user) {
+            if (process.env.AUTH0_ALLOWED_USERS) {
+                const allowedUsers = process.env.AUTH0_ALLOWED_USERS.split(',');
+                if (allowedUsers.includes(user)) {
+                    return Promise.resolve({ username: user, permissions: "*" });
+                } else {
+                    return Promise.resolve(null);
+                }
+            } else {
+                return Promise.resolve({ username: user, permissions: "*" });
+            }
+        },
+    }
+}
 
 var RED = require("node-red");
 
