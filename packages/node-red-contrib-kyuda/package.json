@@ -39,9 +39,7 @@
     },
     "node-red": {
         "nodes": {
-            "kyuda-execute-source": "src/nodes/execute-source.js",
-            "kyuda-invoke-source": "src/nodes/invoke-source.js",
-            "kyuda-invoke-pipeline": "src/nodes/invoke-pipeline.js"
+            "kyuda-invoke": "src/nodes/invoke-source.js"
         }
     },
     "jest": {

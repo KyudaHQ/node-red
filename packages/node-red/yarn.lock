@@ -943,7 +943,7 @@
     "@kafkajs/confluent-schema-registry" "^3.0.1"
     "kafkajs" "^1.15.0"
 
-"@kyuda/node-red-contrib-kyuda@^1.0.2":
+"@kyuda/node-red-contrib-kyuda@file:../node-red-contrib-kyuda":
   "resolved" "file:../node-red-contrib-kyuda"
   "version" "1.0.2"
   dependencies:
@@ -5470,23 +5470,6 @@
   dependencies:
     "passport-strategy" "1.x.x"
 
-"passport-oauth@^1.0.0":
-  "integrity" "sha512-4IZNVsZbN1dkBzmEbBqUxDG8oFOIK81jqdksE3HEb/vI3ib3FMjbiZZ6MTtooyYZzmKu0BfovjvT1pdGgIq+4Q=="
-  "resolved" "https://registry.npmjs.org/passport-oauth/-/passport-oauth-1.0.0.tgz"
-  "version" "1.0.0"
-  dependencies:
-    "passport-oauth1" "1.x.x"
-    "passport-oauth2" "1.x.x"
-
-"passport-oauth1@1.x.x":
-  "integrity" "sha512-Sv2YWodC6jN12M/OXwmR4BIXeeIHjjbwYTQw4kS6tHK4zYzSEpxBgSJJnknBjICA5cj0ju3FSnG1XmHgIhYnLg=="
-  "resolved" "https://registry.npmjs.org/passport-oauth1/-/passport-oauth1-1.2.0.tgz"
-  "version" "1.2.0"
-  dependencies:
-    "oauth" "0.9.x"
-    "passport-strategy" "1.x.x"
-    "utils-merge" "1.x.x"
-
 "passport-oauth2-client-password@0.1.2":
   "integrity" "sha512-GHQH4UtaEZvCLulAxGKHYoSsPRoPRmGsdmaZtMh5nmz80yMLQbdMA9Bg2sp4/UW3PIxJH/143hVjPTiXaNngTQ=="
   "resolved" "https://registry.npmjs.org/passport-oauth2-client-password/-/passport-oauth2-client-password-0.1.2.tgz"
@@ -5494,7 +5477,7 @@
   dependencies:
     "passport-strategy" "1.x.x"
 
-"passport-oauth2@^1.6.0", "passport-oauth2@1.x.x":
+"passport-oauth2@^1.6.0":
   "integrity" "sha512-ZbV43Hq9d/SBSYQ22GOiglFsjsD1YY/qdiptA+8ej+9C1dL1TVB+mBE5kDH/D4AJo50+2i8f4bx0vg4/yDDZCQ=="
   "resolved" "https://registry.npmjs.org/passport-oauth2/-/passport-oauth2-1.6.1.tgz"
   "version" "1.6.1"

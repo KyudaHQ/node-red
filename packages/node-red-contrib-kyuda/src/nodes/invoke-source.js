@@ -6,15 +6,24 @@ const KYUDA_FLOW_TOKEN = process.env.KYUDA_FLOW_TOKEN;
 
 module.exports = function (RED) {
 
-  function invokeSource(source_uid, pipeline_uid, payload) {
-    return fetch(`https://api.kyuda.io/v1/flows-api/invoke-source`, {
-      method: 'post',
+  function invokeSource(msg, endpoint) {
+    const context = {
+      message_id: msg._msgid
+    }
+    const control = {
+      summary: msg._msgid
+    }
+    return fetch(`https://sdk.kyuda.io/endpoints/${endpoint}/execute`, {
+      method: 'put',
+      headers: {
+        "X-Kyuda-Interface": "flow",
+        Authorization: "Bearer " + KYUDA_FLOW_TOKEN,
+      },
       body: JSON.stringify({
-        source_uid,
-        event: payload,
-        control: {}
-      }),
-      headers: { 'Authorization': `Bearer ${KYUDA_FLOW_TOKEN}` }
+        event: msg.payload,
+        context,
+        control
+      })
     })
       .then(response => response.json());
   }
@@ -26,7 +35,7 @@ module.exports = function (RED) {
     node.on('input', async function (msg) {
       try {
         status.info(node, 'processing');
-        const result = await invokeSource(node.id, config.sourceUid, msg.payload)
+        const result = await invokeSource(msg, config.endpoint)
         msg.payload = result;
         status.clear(node);
         return node.send(msg);

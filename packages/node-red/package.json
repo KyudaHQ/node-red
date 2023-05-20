@@ -20,7 +20,7 @@
     "@kyuda/node-red-contrib-graphql": "^1.0.0",
     "@kyuda/node-red-contrib-influxdb": "^1.0.0",
     "@kyuda/node-red-contrib-kafka": "^2.0.0",
-    "@kyuda/node-red-contrib-kyuda": "^1.0.2",
+    "@kyuda/node-red-contrib-kyuda": "file:../node-red-contrib-kyuda",
     "@kyuda/node-red-contrib-logtail": "^2.0.0",
     "@kyuda/node-red-contrib-minio": "^1.0.0",
     "@kyuda/node-red-contrib-papertrail": "^1.0.0",

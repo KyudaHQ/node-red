@@ -4,7 +4,7 @@
     color: "#fff",
     defaults: {
       name: { value: '' },
-      sourceUid: { value: '', required: true },
+      endpoint: { value: '', required: true },
     },
     inputs: 1,
     outputs: 1,
@@ -15,7 +15,7 @@
     labelStyle: function () {
       return this.name ? 'node_label_italic' : '';
     },
-    paletteLabel: 'source',
+    paletteLabel: 'invoke',
     oneditprepare: function () {
       var node = this;
       var pathname = document.location.pathname;
@@ -26,13 +26,13 @@
       //////////////////////////////
 
       function getSources() {
-        $('#node-input-sourceUid').html('');
+        $('#node-input-endpoint').html('');
         $.getJSON(pathname + 'kyuda/sources', function (data) {
           data.forEach(function (source) {
-            if (node.sourceUid === source.uid) {
-              $('#node-input-sourceUid').append(`<option value="${source.uid}" selected>${source.name} (${source.uid})</option>`);
+            if (node.endpoint === source.endpoint) {
+              $('#node-input-endpoint').append(`<option value="${source.endpoint}" selected>${source.name} (${source.uid})</option>`);
             } else {
-              $('#node-input-sourceUid').append(`<option value="${source.uid}">${source.name} (${source.uid})</option>`);
+              $('#node-input-endpoint').append(`<option value="${source.endpoint}">${source.name} (${source.uid})</option>`);
             }
           });
         });
@@ -55,8 +55,8 @@
       <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-      <label for="node-input-sourceUid">Source</label>
-      <select id="node-input-sourceUid" style="width: 70%;"></select>
+      <label for="node-input-endpoint">Source</label>
+      <select id="node-input-endpoint" style="width: 70%;"></select>
     </div>
     <div class="form-row">
       <label>&nbsp;</label>
