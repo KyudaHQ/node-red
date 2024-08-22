@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-zeebe",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "Zeebe nodes for Node-RED ",
     "main": "index.js",
     "scripts": {
