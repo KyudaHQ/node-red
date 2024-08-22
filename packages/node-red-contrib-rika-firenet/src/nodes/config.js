@@ -14,7 +14,7 @@ module.exports = function (RED) {
 
     async function login() {
       console.log('Logging in to Rika Firenet');
-      await r.post({ url: 'https://www.rika-firenet.com/web/login', form: { email: config.username, password: config.password } })
+      await r.post({ url: 'https://www.rika-firenet.com/web/login', form: { email: config.email, password: config.password } })
     }
     async function read(msg) {
       const result = await r.get({ url: `https://www.rika-firenet.com/api/client/${config.stoveId}/status?nocache=${Date.now()}` })

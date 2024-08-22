@@ -2,7 +2,7 @@
   RED.nodes.registerType('rika-firenet-config', {
     category: 'config',
     defaults: {
-      username: { value: '', required: true },
+      email: { value: '', required: true },
       password: { value: '', required: true },
       stoveId: { value: '', required: true },
     },
@@ -14,8 +14,8 @@
 
 <script type="text/x-red" data-template-name="rika-firenet-config">
   <div class="form-row">
-    <label for="node-config-input-username"><i class="icon-user"></i> Username</label>
-    <input type="text" id="node-config-input-username">
+    <label for="node-config-input-email"><i class="icon-user"></i> Email</label>
+    <input type="text" id="node-config-input-email">
   </div>
   <div class="form-row">
     <label for="node-config-input-password"><i class="icon-user"></i> Password</label>
