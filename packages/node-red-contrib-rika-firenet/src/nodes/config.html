@@ -1,0 +1,32 @@
+<script type="text/javascript">
+  RED.nodes.registerType('rika-firenet-config', {
+    category: 'config',
+    defaults: {
+      username: { value: '', required: true },
+      password: { value: '', required: true },
+      stoveId: { value: '', required: true },
+    },
+    label: function () {
+      return this.stoveId;
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="rika-firenet-config">
+  <div class="form-row">
+    <label for="node-config-input-username"><i class="icon-user"></i> Username</label>
+    <input type="text" id="node-config-input-username">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-password"><i class="icon-user"></i> Password</label>
+    <input type="text" id="node-config-input-password">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-stoveId"><i class="icon-user"></i> Stove</label>
+    <input type="text" id="node-config-input-stoveId">
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="rika-firenet-config" data-lang="en-US">
+
+</script>

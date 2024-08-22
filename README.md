@@ -31,6 +31,9 @@ The following environment variables are required to run:
 
 ## Developers
 
+ * `nvm use 20`
+ * `cd packages/node-red`
+ * `npm install`
  * `npm run dev`
  * `npx lerna publish`
  * `npx lerna publish --force-publish`

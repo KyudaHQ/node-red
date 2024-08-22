@@ -1,34 +1,3 @@
-/**
- * Redis based context storage
- *
- * Configuration options:
- * {
- *    host: '127.0.0.1',       // The IP address of the Redis server
- *                             // default: '127.0.0.1'
- *    port: 6379,              // The port of the Redis server
- *                             // default: 6379
- *    db: 0                    // The Redis logical database to connect
- *                             // default: 0
- *    prefix:                  // The string used to prefix all used keys
- *                             // If set, the plugin uses 'prefix + scope + keyname' as key
- *                             // (e.g. prefix:'foo', global.get('key') -> GET foo:global:key )
- *                             // default: undefined
- *    password:                // If set, the plugin will run Redis AUTH command on connect
- *                             // Note: the password will be sent as plaintext
- *                             // default: undefined
- *    tls:                     // An object containing options to pass to tls.connect to set up a TLS connection to Redis
- *                             // default: undefined
- *  }
- *
- * This plugin prefixes all used keys with context scope.
- * For example
- *   context.get('foo') ->  The plugin will get the value of '<id of Node>:foo' (e.g. '36b85111.47f5fe:5b17c82f.6a0888:foo')
- *   flow.get('foo')    ->  The plugin will get the value of '<id of Flow>:foo' (e.g. '5b17c82f.6a0888:foo')
- *   global.get('foo')  ->  The plugin will get the value of 'global:foo'
- *
- * If 'prefix' in above options is set, the key will be prefixed with it additionally.
- */
-
 const redis = require('redis');
 const logger = require('winston').loggers.get('context');
 

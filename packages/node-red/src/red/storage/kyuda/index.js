@@ -11,7 +11,7 @@ let KYUDA_FLOW_TOKEN = null;
 //     return JSON.parse(data);
 // }
 
-export async function init(settings, _runtime) {
+async function init(settings, _runtime) {
     KYUDA_FLOW_TOKEN = settings.storageModuleSettings.KYUDA_FLOW_TOKEN;
     if (!KYUDA_FLOW_TOKEN) {
         throw new Error("KYUDA_FLOW_TOKEN is required");
@@ -20,7 +20,7 @@ export async function init(settings, _runtime) {
     return await Promise.resolve();
 }
 
-export async function getFlows() {
+async function getFlows() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
@@ -38,7 +38,7 @@ export async function getFlows() {
     }
 }
 
-export async function saveFlows(flows) {
+async function saveFlows(flows) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
@@ -51,7 +51,7 @@ export async function saveFlows(flows) {
     }
 }
 
-export async function getCredentials() {
+async function getCredentials() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
@@ -69,7 +69,7 @@ export async function getCredentials() {
     }
 }
 
-export async function saveCredentials(credentials) {
+async function saveCredentials(credentials) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
@@ -82,7 +82,7 @@ export async function saveCredentials(credentials) {
     }
 }
 
-export async function getSettings() {
+async function getSettings() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
@@ -100,7 +100,7 @@ export async function getSettings() {
     }
 }
 
-export async function saveSettings(settings) {
+async function saveSettings(settings) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
@@ -113,7 +113,7 @@ export async function saveSettings(settings) {
     }
 }
 
-export async function getSessions() {
+async function getSessions() {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}` };
@@ -131,7 +131,7 @@ export async function getSessions() {
     }
 }
 
-export async function saveSessions(sessions) {
+async function saveSessions(sessions) {
     try {
         // const global = Global.getInstance();
         // const headers = { Authorization: `Bearer ${global.access_token}`, "Content-Type": "application/json" };
@@ -144,7 +144,7 @@ export async function saveSessions(sessions) {
     }
 }
 
-export async function getLibraryEntry(type, name) {
+async function getLibraryEntry(type, name) {
     // let path = `${UID}/lib/${type}/${name}`;
     // if (name) {
     //     if (name.substr(-1) === '/') {
@@ -199,7 +199,7 @@ export async function getLibraryEntry(type, name) {
     // }
 }
 
-export async function saveLibraryEntry(type, name, meta, body) {
+async function saveLibraryEntry(type, name, meta, body) {
     // let path = `${UID}/lib/${type}/${name}`;
     // let filename = _.last(name.split('/'));
     // let metadata = stringify(meta);
@@ -207,4 +207,18 @@ export async function saveLibraryEntry(type, name, meta, body) {
     //     filename: filename,
     //     metadata: metadata
     // });
+}
+
+module.exports = {
+    init,
+    getFlows,
+    saveFlows,
+    getCredentials,
+    saveCredentials,
+    getSettings,
+    saveSettings,
+    getSessions,
+    saveSessions,
+    getLibraryEntry,
+    saveLibraryEntry
 }

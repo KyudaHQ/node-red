@@ -20,6 +20,7 @@ html {
 #red-ui-header {
   background: #f3f3f3;
   color: #303133;
+  border-bottom: none;
 }
 
 #red-ui-header .red-ui-header-toolbar li {
@@ -67,23 +68,27 @@ html {
 
 #red-ui-header .red-ui-deploy-button {
   color: #fff;
-  border: 1px solid rgb(236 72 153);
-  background: rgb(236 72 153);
-  border-color: rgb(236 72 153);
+  border: 1px solid rgb(255, 165, 0);
+  background: rgb(255, 165, 0);
+  border-color: rgb(255, 165, 0);
   border-radius: 0px;
   text-transform: uppercase;
 }
 
 #red-ui-header .red-ui-deploy-button:hover {
   color: #fff;
-  background-color: rgb(131 24 67);
-  border-color: rgb(131 24 67);
+  background-color: rgb(255, 140, 0);
+  border-color: rgb(255, 140, 0);
 }
 
 #red-ui-header #red-ui-header-button-deploy.disabled {
   color: #fff;
   background-color: #c7c7c7;
   border-color: #aaa;
+}
+
+#red-ui-header #red-ui-header-button-sidemenu {
+  color: #303133;
 }
 
 /* Node Palette */
@@ -115,8 +120,8 @@ html {
   border-radius: 0px;
 }
 
-/* LAB */
-.kyuda-button {
+/* Kyuda */
+/* .kyuda-button {
   display: inline-block;
   line-height: 1;
   white-space: nowrap;
@@ -151,4 +156,4 @@ html {
   background: rgb(236 72 153);
   border-color: rgb(236 72 153);
   color: #fff;
-}
+} */

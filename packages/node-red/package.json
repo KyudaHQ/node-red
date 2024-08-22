@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -r esm --watch src server.js server.js",
-    "start": "node -r esm server.js"
+    "dev": "nodemon --watch src server.js server.js",
+    "start": "node server.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   },
   "author": "",
   "license": "ISC",
@@ -26,22 +26,22 @@
     "@kyuda/node-red-contrib-papertrail": "^1.0.0",
     "@kyuda/node-red-contrib-rabbitmq-bus": "^1.0.0",
     "@kyuda/node-red-contrib-salesforce": "^2.0.1",
-    "@kyuda/node-red-contrib-zeebe": "^1.0.4",
+    "@kyuda/node-red-contrib-meteo-swiss": "file:../node-red-contrib-meteo-swiss",
+    "@kyuda/node-red-contrib-rika-firenet": "file:../node-red-contrib-rika-firenet",
     "axios": "^0.27.2",
     "bootstrap-vue": "^2.21.2",
     "dotenv": "^8.2.0",
-    "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "graphql": "^15.6.0",
     "graphql-request": "^3.2.0",
     "jquery": "^3.6.1",
     "lodash": "^4.17.19",
-    "minio": "^7.0.32",
+    "minio": "^8.0.1",
     "mongodb": "^3.6.0",
     "node-fetch": "^2.6.7",
-    "node-red": "^3.0.2",
-    "node-red-dashboard": "^3.3.1",
+    "node-red": "^4.0.2",
+    "node-red-dashboard": "^3.6.5",
     "node-red-node-swagger": "^0.1.9",
     "passport": "^0.6.0",
     "passport-oauth2": "^1.6.0",
@@ -50,11 +50,11 @@
     "vue": "^2.6.14",
     "winston": "^3.3.3"
   },
-  "devDependencies": {
-    "nodemon": "^1.18.10"
-  },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "68d37ce08d069417884032b0f3cab4d19eff02ba"
+  "gitHead": "68d37ce08d069417884032b0f3cab4d19eff02ba",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
 }

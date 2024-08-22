@@ -178,6 +178,9 @@ const settings = {
         projects: {
             enabled: false,
         },
+        multiplayer: {
+            enabled: true,
+        }
     },
     ui: {
         path: 'dashboard', middleware: function (req, res, next) {

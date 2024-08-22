@@ -1,0 +1,69 @@
+<script type="text/javascript">
+  RED.nodes.registerType('sandbox-meteo-swiss-forecast', {
+    category: 'sandbox',
+    color: "#fff",
+    defaults: {
+      name: { value: '' },
+      location: { value: '', required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'meteo-swiss.png',
+    label: function () {
+      return this.name || 'MeteoSwiss Forecast';
+    },
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : '';
+    },
+    paletteLabel: 'forecast',
+    oneditprepare: function () {
+      var node = this;
+      var pathname = document.location.pathname;
+      if (pathname.slice(-1) != "/") {
+        pathname += "/";
+      }
+
+      //////////////////////////////
+
+      function getLocations() {
+        $('#node-input-location').html('');
+        $.getJSON(pathname + 'sandbox/meteo-swiss/locations', function (data) {
+          data.forEach(function (location) {
+            if (node.location === location.id) {
+              $('#node-input-location').append(`<option value="${location.id}" selected>${location.name} (${location.id})</option>`);
+            } else {
+              $('#node-input-location').append(`<option value="${location.id}">${location.name} (${location.id})</option>`);
+            }
+          });
+        });
+      }
+
+      //////////////////////////////
+
+      $("#node-reload").mousedown(function () {
+        getLocations();
+      })
+      getLocations();
+
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="sandbox-meteo-swiss-forecast">
+    <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+      <label for="node-input-location">Location</label>
+      <select id="node-input-location" style="width: 70%;"></select>
+    </div>
+    <div class="form-row">
+      <label>&nbsp;</label>
+      <a class="btn" id="node-reload" href="#"">Reload</a>
+    </div>
+  </script>
+
+<script type="text/x-red" data-help-name="sandbox-meteo-swiss-forecast" data-lang="en-US">
+
+  </script>

@@ -31,7 +31,7 @@ function parse(data) {
     return JSON.parse(data);
 }
 
-export async function init(settings, _runtime) {
+async function init(settings, _runtime) {
     UID = settings.storageModuleSettings.prefix;
     BUCKET = settings.storageModuleSettings.bucket;
     client = new Minio.Client({
@@ -44,7 +44,7 @@ export async function init(settings, _runtime) {
     return await Promise.resolve();
 }
 
-export async function getFlows() {
+async function getFlows() {
     try {
         return parse(await streamToString(await client.getObject(BUCKET, `${UID}/flows.json`)));
     } catch (err) {
@@ -52,11 +52,11 @@ export async function getFlows() {
     }
 }
 
-export async function saveFlows(flows) {
+async function saveFlows(flows) {
     const result = await client.putObject(BUCKET, `${UID}/flows.json`, stringify(flows), 'application/json');
 }
 
-export async function getCredentials() {
+async function getCredentials() {
     try {
         return parse(await streamToString(await client.getObject(BUCKET, `${UID}/credentials.json`)));
     } catch (err) {
@@ -64,11 +64,11 @@ export async function getCredentials() {
     }
 }
 
-export async function saveCredentials(credentials) {
+async function saveCredentials(credentials) {
     const result = await client.putObject(BUCKET, `${UID}/credentials.json`, stringify(credentials), 'application/json');
 }
 
-export async function getSettings() {
+async function getSettings() {
     try {
         return parse(await streamToString(await client.getObject(BUCKET, `${UID}/settings.json`)));
     } catch (err) {
@@ -76,11 +76,11 @@ export async function getSettings() {
     }
 }
 
-export async function saveSettings(settings) {
+async function saveSettings(settings) {
     const result = await client.putObject(BUCKET, `${UID}/settings.json`, stringify(settings), 'application/json');
 }
 
-export async function getSessions() {
+async function getSessions() {
     try {
         return parse(await streamToString(await client.getObject(BUCKET, `${UID}/sessions.json`)));
     } catch (err) {
@@ -88,11 +88,11 @@ export async function getSessions() {
     }
 }
 
-export async function saveSessions(sessions) {
+async function saveSessions(sessions) {
     const result = await client.putObject(BUCKET, `${UID}/sessions.json`, stringify(sessions), 'application/json');
 }
 
-export async function getLibraryEntry(type, name) {
+async function getLibraryEntry(type, name) {
     let path = `${UID}/lib/${type}/${name}`;
     if (name) {
         if (name.substr(-1) === '/') {
@@ -147,7 +147,7 @@ export async function getLibraryEntry(type, name) {
     }
 }
 
-export async function saveLibraryEntry(type, name, meta, body) {
+async function saveLibraryEntry(type, name, meta, body) {
     let path = `${UID}/lib/${type}/${name}`;
     let filename = _.last(name.split('/'));
     let metadata = stringify(meta);
@@ -155,4 +155,18 @@ export async function saveLibraryEntry(type, name, meta, body) {
         filename: filename,
         metadata: metadata
     });
+}
+
+module.exports = {
+    init,
+    getFlows,
+    saveFlows,
+    getCredentials,
+    saveCredentials,
+    getSettings,
+    saveSettings,
+    getSessions,
+    saveSessions,
+    getLibraryEntry,
+    saveLibraryEntry
 }

@@ -1,0 +1,35 @@
+<script type="text/javascript">
+    RED.nodes.registerType('rika-firenet-read', {
+      category: 'rika-firenet',
+      color: "#fff",
+      defaults: {
+        name: { value: '' },
+        rikaFirenet: { type: 'rika-firenet-config', required: true },
+      },
+      inputs: 1,
+      outputs: 1,
+      icon: 'rika.png',
+      label: function () {
+        return this.name || 'RikaFirenet Read';
+      },
+      labelStyle: function () {
+        return this.name ? 'node_label_italic' : '';
+      },
+      paletteLabel: 'read',
+    });
+  </script>
+
+  <script type="text/x-red" data-template-name="rika-firenet-read">
+    <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-rikaFirenet"><i class="icon-tag"></i> RikaFirenet</label>
+        <input type="text" id="node-input-rikaFirenet" placeholder="Config">
+    </div>
+  </script>
+  
+  <script type="text/x-red" data-help-name="rika-firenet-read" data-lang="en-US">
+     
+  </script>

@@ -12,7 +12,7 @@ function log(name, data) {
     logger.debug(name, data)
 }
 
-export async function init(settings, runtime) {
+async function init(settings, runtime) {
     _settings = settings;
     _runtime = runtime;
     const uri = "mongodb://127.0.0.1:27017";
@@ -20,7 +20,7 @@ export async function init(settings, runtime) {
     return await client.connect();
 }
 
-export async function getFlows() {
+async function getFlows() {
     const database = client.db('node-red');
     const collection = database.collection('flows');
     const result = await collection.findOne({
@@ -30,7 +30,7 @@ export async function getFlows() {
     return _.get(result, 'data', [])
 }
 
-export async function saveFlows(flows) {
+async function saveFlows(flows) {
     const database = client.db('node-red');
     const collection = database.collection('flows');
     const result = await collection.updateOne({
@@ -46,7 +46,7 @@ export async function saveFlows(flows) {
     log('saveFlows', result.result);
 }
 
-export async function getCredentials() {
+async function getCredentials() {
     const database = client.db('node-red');
     const collection = database.collection('credentials');
     const result = await collection.findOne({
@@ -56,7 +56,7 @@ export async function getCredentials() {
     return _.get(result, 'data', [])
 }
 
-export async function saveCredentials(credentials) {
+async function saveCredentials(credentials) {
     const database = client.db('node-red');
     const collection = database.collection('credentials');
     const result = await collection.updateOne({
@@ -72,7 +72,7 @@ export async function saveCredentials(credentials) {
     log('saveCredentials', result.result);
 }
 
-export async function getSettings() {
+async function getSettings() {
     const database = client.db('node-red');
     const collection = database.collection('settings');
     const result = await collection.findOne({
@@ -82,7 +82,7 @@ export async function getSettings() {
     return _.get(result, 'data', {})
 }
 
-export async function saveSettings(settings) {
+async function saveSettings(settings) {
     const database = client.db('node-red');
     const collection = database.collection('settings');
     const result = await collection.updateOne({
@@ -98,7 +98,7 @@ export async function saveSettings(settings) {
     log('saveSettings', result.result);
 }
 
-export async function getSessions() {
+async function getSessions() {
     const database = client.db('node-red');
     const collection = database.collection('sessions');
     const result = await collection.findOne({
@@ -108,7 +108,7 @@ export async function getSessions() {
     return _.get(result, 'data', {})
 }
 
-export async function saveSessions(sessions) {
+async function saveSessions(sessions) {
     const database = client.db('node-red');
     const collection = database.collection('sessions');
     const result = await collection.updateOne({
@@ -124,5 +124,19 @@ export async function saveSessions(sessions) {
     log('saveSessions', result.result);
 }
 
-export async function getLibraryEntry(type, name) {}
-export async function saveLibraryEntry(type, name, meta, body) {}
+async function getLibraryEntry(type, name) {}
+async function saveLibraryEntry(type, name, meta, body) {}
+
+module.exports = {
+    init,
+    getFlows,
+    saveFlows,
+    getCredentials,
+    saveCredentials,
+    getSettings,
+    saveSettings,
+    getSessions,
+    saveSessions,
+    getLibraryEntry,
+    saveLibraryEntry
+}

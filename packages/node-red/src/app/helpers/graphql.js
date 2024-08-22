@@ -1,5 +1,5 @@
-import _ from 'lodash'
-import { GraphQLClient, gql } from 'graphql-request'
+var _ = require('lodash');
+var { GraphQLClient, gql } = require('graphql-request')
 
 const graphQLClient = new GraphQLClient(`https://${process.env.HASURA_GRAPHQL_DOMAIN}/v1/graphql`, {
     headers: {
@@ -7,7 +7,7 @@ const graphQLClient = new GraphQLClient(`https://${process.env.HASURA_GRAPHQL_DO
     },
 })
 
-export async function fetchLabMetadata(lab_uid) {
+async function fetchLabMetadata(lab_uid) {
     const query = gql`
         query getLabByUid($lab_uid: String!) {
             labs(where: {uid: {_eq: $lab_uid}}) {
@@ -29,7 +29,7 @@ export async function fetchLabMetadata(lab_uid) {
     ];
 }
 
-export async function fetchLabResources(lab_uid) {
+async function fetchLabResources(lab_uid) {
     const query = gql`
         query getLabByUid($lab_uid: String!) {
             labs(where: {uid: {_eq: $lab_uid}}) {
@@ -55,4 +55,9 @@ export async function fetchLabResources(lab_uid) {
     })
     const resources = _.get(data, 'labs.0.project.resources', []);
     return resources;
+}
+
+modules.exports = {
+    fetchLabMetadata,
+    fetchLabResources
 }

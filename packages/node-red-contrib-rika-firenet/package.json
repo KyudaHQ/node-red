@@ -1,0 +1,54 @@
+{
+    "name": "@kyuda/node-red-contrib-rika-firenet",
+    "version": "1.0.0",
+    "description": "RikaFirenet for Node-RED ",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest --testPathIgnorePatterns integration --forceExit --detectOpenHandles",
+        "test:integration": "jest --forceExit --detectOpenHandles"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kyuda/node-red.git",
+        "directory": "packages/node-red-contrib-rika-firenet"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "author": "ilzenzo",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/kyuda/node-red/issues"
+    },
+    "homepage": "https://github.com/kyuda/node-red#readme",
+    "keywords": [
+        "node-red",
+        "rika-firenet"
+    ],
+    "dependencies": {
+        "request-promise-native": "^1.0.9",
+        "uuid": "^3.3.2"
+    },
+    "devDependencies": {
+        "eslint": "^6.1.0",
+        "jest": "^24.9.0",
+        "node-red": "^1.0.2",
+        "node-red-node-test-helper": "^0.2.3"
+    },
+    "node-red": {
+        "nodes": {
+            "rika-firenet-config": "src/nodes/config.js",
+            "rika-firenet-read": "src/nodes/read.js"
+        }
+    },
+    "jest": {
+        "testEnvironment": "node"
+    },
+    "prettier": {
+        "trailingComma": "es5",
+        "tabWidth": 4,
+        "semi": true,
+        "singleQuote": true
+    },
+    "gitHead": "ce5337230f631bff7ab5491728feaf4ee41e0bfc"
+}
