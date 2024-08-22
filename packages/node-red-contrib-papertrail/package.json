@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-papertrail",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Papertrail for Node-RED ",
     "main": "index.js",
     "scripts": {

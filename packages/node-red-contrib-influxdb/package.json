@@ -1,6 +1,6 @@
 {
   "name": "@kyuda/node-red-contrib-influxdb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "InfluxDB for Node-RED",
   "main": "influxdb.js",
   "scripts": {

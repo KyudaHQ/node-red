@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-google-cloud",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Google Cloud for Node-RED ",
     "main": "index.js",
     "scripts": {

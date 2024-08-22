@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-minio",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Minio for Node-RED ",
     "main": "index.js",
     "scripts": {

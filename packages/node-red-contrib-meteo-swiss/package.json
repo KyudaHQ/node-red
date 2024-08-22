@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-meteo-swiss",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "MeteoSwiss for Node-RED ",
     "main": "index.js",
     "scripts": {

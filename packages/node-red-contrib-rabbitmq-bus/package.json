@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-rabbitmq-bus",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "RabbitMQ Bus for Node-RED ",
     "main": "index.js",
     "scripts": {
