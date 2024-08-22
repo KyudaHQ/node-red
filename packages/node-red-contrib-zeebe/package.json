@@ -1,7 +1,7 @@
 {
     "name": "@kyuda/node-red-contrib-zeebe",
     "version": "1.0.6",
-    "description": "Zeebe nodes for Node-RED ",
+    "description": "Camunda 8 (Zeebe) for Node-RED ",
     "main": "index.js",
     "scripts": {
         "test": "jest --testPathIgnorePatterns integration --forceExit --detectOpenHandles",
