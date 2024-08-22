@@ -13,8 +13,8 @@ module.exports = function (RED) {
     var node = this;
 
     async function login() {
-      console.log('Logging in to Rika Firenet');
-      await r.post({ url: 'https://www.rika-firenet.com/web/login', form: { email: config.email, password: config.password } })
+      console.log('Logging in to RIKA Firenet');
+      await r.post({ url: 'https://www.rika-firenet.com/web/login', form: { email: node.credentials.email, password: node.credentials.password } })
     }
     async function read(msg) {
       const result = await r.get({ url: `https://www.rika-firenet.com/api/client/${config.stoveId}/status?nocache=${Date.now()}` })
@@ -29,29 +29,36 @@ module.exports = function (RED) {
       read: async function (msg) {
         try {
           return await read(msg);
-        } catch (err) {
+        } catch (err1) {
           try {
             await login();
             return await read(msg);
-          } catch (error) {
-            throw new Error('Failed to read data from Rika Firenet');
+          } catch (err2) {
+            console.log(err2)
+            throw new Error('Failed to read data from RIKA Firenet');
           }
         }
       },
       write: async function (msg) {
         try {
           return await write(msg);
-        } catch (err) {
+        } catch (err1) {
           try {
             await login();
             return await write(msg);
-          } catch (error) {
-            throw new Error('Failed to read data from Rika Firenet');
+          } catch (err2) {
+            console.log(err2)
+            throw new Error('Failed to read data from RIKA Firenet');
           }
         }
       }
     };
   }
 
-  RED.nodes.registerType('rika-firenet-config', RikaFirenetConfigNode);
+  RED.nodes.registerType('rika-firenet-config', RikaFirenetConfigNode, {
+    credentials: {
+      email: { type: "text" },
+      password: { type: "password" }
+    }
+  });
 }
