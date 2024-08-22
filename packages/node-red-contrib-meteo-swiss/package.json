@@ -23,7 +23,7 @@
     "homepage": "https://github.com/KyudaHQ/node-red#readme",
     "keywords": [
         "node-red",
-        "kyuda"
+        "meteo-swiss"
     ],
     "dependencies": {
         "node-fetch": "^2.6.0",
@@ -39,7 +39,7 @@
     },
     "node-red": {
         "nodes": {
-            "meteo-swiss-forecast": "src/nodes/meteo-swiss-forecast.js"
+            "meteo-swiss-station": "src/nodes/meteo-swiss-station.js"
         }
     },
     "jest": {

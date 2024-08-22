@@ -4,30 +4,30 @@ const status = require('../util/nodeStatus');
 
 module.exports = function (RED) {
 
-  async function getForecast(msg, location) {
+  async function getStation(msg, station) {
     const context = {
       message_id: msg._msgid
     }
     const control = {
       summary: msg._msgid
     }
-    const result = await fetch(`https://app-prod-ws.meteoswiss-app.ch/v1/stationOverview?station=${location}`, {
+    const result = await fetch(`https://app-prod-ws.meteoswiss-app.ch/v1/stationOverview?station=${station}`, {
       method: 'get',
       headers: {
       },
     })
       .then(response => response.json());
-    return result[location]
+    return result[station]
   }
 
-  function MeteoSwissForecastNode(config) {
+  function MeteoSwissStationNode(config) {
     RED.nodes.createNode(this, config);
     var node = this;
 
     node.on('input', async function (msg) {
       try {
         status.info(node, 'processing');
-        const result = await getForecast(msg, config.location)
+        const result = await getStation(msg, config.station)
         msg.payload = result;
         status.successRing(node, `${result.stationId} ${result.temperature}°C`);
         return node.send(msg);
@@ -38,9 +38,9 @@ module.exports = function (RED) {
     })
   }
 
-  RED.nodes.registerType('meteo-swiss-forecast', MeteoSwissForecastNode);
+  RED.nodes.registerType('meteo-swiss-station', MeteoSwissStationNode);
 
-  RED.httpAdmin.get('/meteo-swiss/locations', async function (req, res) {
+  RED.httpAdmin.get('/meteo-swiss/stations', async function (req, res) {
     res.json([
       { id: "TAE", name: 'Aadorf / Tänikon' }
       , { id: "ABE", name: 'Aarberg' }
