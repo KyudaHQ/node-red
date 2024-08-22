@@ -10,7 +10,7 @@ This module brings Rika Firenet awesomeness to Node-RED!
 
 The *rika-firenet-read* node can be used to read the staus of a stove from [Rika Firenet](https://www.rika-firenet.com).
 
-![Firenet](packages/node-red-contrib-rika-firenet/docs/firenet.svg)
+![Firenet](/packages/node-red-contrib-rika-firenet/docs/firenet.svg)
 
 ## Credits
 
