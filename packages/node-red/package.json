@@ -1,6 +1,6 @@
 {
   "name": "@kyuda/node-red",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,12 @@
     "@kyuda/node-red-contrib-kafka": "^2.0.0",
     "@kyuda/node-red-contrib-kyuda": "^1.1.0",
     "@kyuda/node-red-contrib-logtail": "^2.0.0",
+    "@kyuda/node-red-contrib-meteo-swiss": "file:../node-red-contrib-meteo-swiss",
     "@kyuda/node-red-contrib-minio": "^1.0.0",
     "@kyuda/node-red-contrib-papertrail": "^1.0.0",
     "@kyuda/node-red-contrib-rabbitmq-bus": "^1.0.0",
-    "@kyuda/node-red-contrib-salesforce": "^2.0.1",
-    "@kyuda/node-red-contrib-meteo-swiss": "file:../node-red-contrib-meteo-swiss",
     "@kyuda/node-red-contrib-rika-firenet": "file:../node-red-contrib-rika-firenet",
+    "@kyuda/node-red-contrib-salesforce": "^2.0.1",
     "axios": "^0.27.2",
     "bootstrap-vue": "^2.21.2",
     "dotenv": "^8.2.0",

@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-sandbox",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Sandbox for Node-RED ",
     "main": "index.js",
     "scripts": {
@@ -36,7 +36,6 @@
         "lint-staged": "^9.4.2",
         "node-red": "^1.0.2",
         "node-red-node-test-helper": "^0.2.3"
-        
     },
     "node-red": {
         "nodes": {
