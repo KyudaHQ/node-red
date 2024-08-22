@@ -1,6 +1,6 @@
 {
     "name": "@kyuda/node-red-contrib-camunda",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "description": "Camunda 7 for Node-RED ",
     "main": "index.js",
     "scripts": {
