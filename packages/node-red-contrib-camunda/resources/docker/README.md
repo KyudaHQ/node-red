@@ -18,7 +18,7 @@ The components that will be started with this profile:
 -   Clone this repository:
 
 ```bash
-git clone https://github.com/kyuda/node-red-contrib-camunda
+git clone https://github.com/KyudaHQ/node-red-contrib-camunda
 ```
 
 ### Start the containers
