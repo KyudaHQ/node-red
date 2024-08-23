@@ -1,0 +1,43 @@
+<script type="text/javascript">
+  RED.nodes.registerType('meteo-swiss-forecast', {
+    category: 'meteoswiss',
+    color: "#fff",
+    defaults: {
+      name: { value: '' },
+      plz: { value: '', required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'meteo-swiss.png',
+    label: function () {
+      return this.name || 'MeteoSwiss Forecast';
+    },
+    labelStyle: function () {
+      return this.name ? 'node_label_italic' : '';
+    },
+    paletteLabel: 'forecast',
+    oneditprepare: function () {
+      var node = this;
+      var pathname = document.location.pathname;
+      if (pathname.slice(-1) != "/") {
+        pathname += "/";
+      }
+
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="meteo-swiss-forecast">
+    <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+      <label for="node-input-plz">PLZ</label>
+      <input type="text" id="node-input-plz" placeholder="PLZ"></input>
+    </div>
+  </script>
+
+<script type="text/x-red" data-help-name="meteo-swiss-forecast" data-lang="en-US">
+
+  </script>

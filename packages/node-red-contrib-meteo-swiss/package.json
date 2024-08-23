@@ -39,7 +39,8 @@
     },
     "node-red": {
         "nodes": {
-            "meteo-swiss-station": "src/nodes/meteo-swiss-station.js"
+            "meteo-swiss-station": "src/nodes/meteo-swiss-station.js",
+            "meteo-swiss-forecast": "src/nodes/meteo-swiss-forecast.js"
         }
     },
     "jest": {

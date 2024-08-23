@@ -14,6 +14,10 @@ The *meteo-swiss-station* node can be used to read the data from a [MeteoSwiss m
 
 The list of measured values and information about the individual measuring stations are available on the official [web application](https://www.meteoswiss.admin.ch/services-and-publications/applications/measurement-values-and-measuring-networks.html#param=messnetz-automatisch&table=false).
 
+The *meteo-swiss-forecast* node can be used to read the forecasted data for a given PLZ.
+
+![Node 1](/packages/node-red-contrib-meteo-swiss/docs/node-2.png)
+
 ## Credits
 
 The package is developed and maintained by [Kyuda](https://www.kyuda.io/).
