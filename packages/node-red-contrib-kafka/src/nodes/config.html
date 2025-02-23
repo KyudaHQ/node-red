@@ -5,9 +5,9 @@
       name: { value: 'Kafka' },
 
       brokers: { value: [], required: true },
-      schemaRegistryHost: { value: '', required: true },
-      schemaRegistryUsername: { value: '', required: true },
-      schemaRegistryPassword: { value: '', required: true },
+      // schemaRegistryHost: { value: '', required: true },
+      // schemaRegistryUsername: { value: '', required: true },
+      // schemaRegistryPassword: { value: '', required: true },
 
       clientId: { required: true },
       connectionTimeout: { value: 3000, required: true },
@@ -88,7 +88,7 @@
     <label for="node-config-input-brokers"><i class="fa fa-server"></i> Brokers</label>
     <input id="node-config-input-brokers" type="text" placeholder="kafka1:9092,kafka2:9092,..." >
 	</div>
-  <div class="form-row">
+  <!-- <div class="form-row">
     <label for="node-config-input-schemaRegistryHost"><i class="fa fa-server"></i> Schema Registry Host</label>
     <input id="node-config-input-schemaRegistryHost" type="text" placeholder="http://registry:8081/" >
 	</div>
@@ -99,7 +99,7 @@
   <div class="form-row">
     <label for="node-config-input-schemaRegistryPassword"><i class="fa fa-key"></i> Schema Registry Password</label>
     <input  id="node-config-input-schemaRegistryPassword" type="password" placeholder="Password" >
-  </div>
+  </div> -->
   <div class="form-row">
     <label for="node-config-input-clientId"><i class="fa fa-id-card-o"></i> Client ID</label>
     <input id="node-config-input-clientId" type="text" placeholder="Client ID" >

@@ -14,7 +14,7 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     var node = this;
 
-    var schemaRegistryOptions = new Object();
+    // var schemaRegistryOptions = new Object();
     var kafkaOptions = new Object();
     kafkaOptions.brokers = config.brokers.replace(" ", "").split(",");
     kafkaOptions.clientId = config.clientId;
@@ -46,13 +46,13 @@ module.exports = function (RED) {
       kafkaOptions.sasl.password = node.credentials.saslPassword;
     }
 
-    schemaRegistryOptions.host = config.schemaRegistryHost;
-    schemaRegistryOptions.auth = new Object();
-    schemaRegistryOptions.auth.username = config.schemaRegistryUsername;
-    schemaRegistryOptions.auth.password = config.schemaRegistryPassword;
+    // schemaRegistryOptions.host = config.schemaRegistryHost;
+    // schemaRegistryOptions.auth = new Object();
+    // schemaRegistryOptions.auth.username = config.schemaRegistryUsername;
+    // schemaRegistryOptions.auth.password = config.schemaRegistryPassword;
 
     node.kafkaOptions = kafkaOptions;
-    node.schemaRegistryOptions = schemaRegistryOptions;
+    // node.schemaRegistryOptions = schemaRegistryOptions;
   }
 
   RED.nodes.registerType('kafka-config', KafkaConfigNode, {

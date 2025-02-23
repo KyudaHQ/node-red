@@ -3,7 +3,7 @@ const status = require('../util/nodeStatus');
 
 module.exports = function (RED) {
   const { Kafka } = require('kafkajs');
-  const { SchemaRegistry } = require('@kafkajs/confluent-schema-registry')
+  // const { SchemaRegistry } = require('@kafkajs/confluent-schema-registry')
   const { v4: uuidv4 } = require('uuid');
 
   function KafkaConsumerNode(config) {
@@ -14,7 +14,7 @@ module.exports = function (RED) {
     node.kafkaConfig = RED.nodes.getNode(node.kafka);
 
     const kafka = new Kafka(node.kafkaConfig.kafkaOptions);
-    const registry = new SchemaRegistry(node.kafkaConfig.schemaRegistryOptions);
+    // const registry = new SchemaRegistry(node.kafkaConfig.schemaRegistryOptions);
 
     const consumerOptions = new Object();
     consumerOptions.groupId = config.groupId ? config.groupId : "kafka_js_" + uuidv4();
@@ -79,11 +79,10 @@ module.exports = function (RED) {
         payload.payload = new Object();
         payload.payload = message;
 
-        // payload.payload.key = message.key ? message.key.toString() : null;
-        // payload.payload.value = message.value.toString();
-
-        payload.payload.key = await registry.decode(message.key)
-        payload.payload.value = await registry.decode(message.value)
+        // payload.payload.key = await registry.decode(message.key)
+        // payload.payload.value = await registry.decode(message.value)
+        payload.payload.key = message.key ? message.key.toString() : null;
+        payload.payload.value = message.value.toString();
 
         for (const [key, value] of Object.entries(payload.payload.headers)) {
           payload.payload.headers[key] = value.toString();
