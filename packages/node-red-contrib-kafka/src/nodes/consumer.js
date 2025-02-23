@@ -118,17 +118,18 @@ module.exports = function (RED) {
     }
 
     node.init().catch(err => {
-      node.onError(err);
+      node.error(err.message);
     });
 
-    node.on('close', function (done) {
-      node.consumer.disconnect().then(() => {
+    node.on('close', async function (done) {
+      try {
+        await node.consumer.disconnect();
         node.status({});
         clearInterval(node.interval);
         done();
-      }).catch(err => {
-        node.onError(err);
-      });
+      } catch (err) {
+        node.error(err.message);
+      }
     });
 
   }
