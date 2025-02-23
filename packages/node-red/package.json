@@ -1,6 +1,6 @@
 {
   "name": "@kyuda/node-red",
-  "version": "2.0.17",
+  "version": "2.0.18",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
     "@kyuda/node-red-contrib-google-cloud": "^1.0.1",
     "@kyuda/node-red-contrib-graphql": "^1.0.1",
     "@kyuda/node-red-contrib-influxdb": "^1.0.1",
-    "@kyuda/node-red-contrib-kafka": "^2.0.4",
+    "@kyuda/node-red-contrib-kafka": "^2.0.5",
     "@kyuda/node-red-contrib-kyuda": "^1.1.1",
     "@kyuda/node-red-contrib-logtail": "^2.0.1",
     "@kyuda/node-red-contrib-meteo-swiss": "^1.0.4",
