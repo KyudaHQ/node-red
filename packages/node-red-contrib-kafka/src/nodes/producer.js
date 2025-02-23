@@ -57,9 +57,8 @@ module.exports = function (RED) {
 
     node.on('close', async function (done) {
       try {
-        await node.consumer.disconnect();
+        await node.producer.disconnect();
         node.status({});
-        clearInterval(node.interval);
         done();
       } catch (err) {
         node.error(err.message);
