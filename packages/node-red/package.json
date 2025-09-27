@@ -28,6 +28,7 @@
     "@kyuda/node-red-contrib-rabbitmq-bus": "^1.0.1",
     "@kyuda/node-red-contrib-rika-firenet": "^1.0.3",
     "@kyuda/node-red-contrib-salesforce": "^2.0.2",
+    "@kyuda/node-red-contrib-grpc":  "^0.0.1",
     "axios": "^0.27.2",
     "bootstrap-vue": "^2.21.2",
     "dotenv": "^8.2.0",

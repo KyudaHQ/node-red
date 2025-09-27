@@ -1,0 +1,160 @@
+<script src="node-red-contrib-grpc/certsgen.js"></script>
+<script src="node-red-contrib-grpc/forge.min-0.7.0.js"></script>
+
+<!-- ***************** SERVER CONFIG *********************** -->
+<script type="text/x-red" data-template-name="grpc-server">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-server"><i class="fa fa-tag"></i> Server</label>
+        <input type="text" id="node-config-input-server" placeholder="Server URL (default 0.0.0.0)">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-port" style="margin-left: 10px; width: 35px; "> Port</label>
+        <input type="text" id="node-config-input-port" placeholder="Port" style="width:45px">		
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-config-input-localServer" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-config-input-localServer" style="width: auto">Start a local server</label>
+    </div>
+	  <div class="form-row">
+        <label for="node-config-input-protoFile"> Proto File</label>
+        <textarea id="node-config-input-protoFile" placeholder="Proto File" rows="20" style="width: 100%"></textarea>
+    </div>
+
+    <div class="form-row">
+        <input type="checkbox" id="node-config-input-ssl" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-config-input-ssl" style="width: auto">SSL?</label>
+    </div>
+    <div id="ssl">
+        <div class="form-row">
+            <input type="checkbox" id="node-config-input-selfsigned" style="display: inline-block; width: auto; vertical-align: top;">
+            <label for="node-config-input-selfsigned" style="width: auto">Self-signed?</label>
+        </div>
+        <div id="selfsigned">
+            <div class="form-row">
+                <input type="checkbox" id="node-config-input-mutualTls" style="display: inline-block; width: auto; vertical-align: top;">
+                <label for="node-config-input-mutualTls" style="width: auto">Mutual TLS?</label>
+            </div>
+            <div class="form-row">
+                <button id="keygen">Generate bellow (takes some time)</button>
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-ca">CA Cert</label>
+                <textarea id="node-config-input-ca" placeholder="CA Cert" rows="10" style="width: 100%"></textarea>
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-chain">Chain Cert</label>
+                <textarea id="node-config-input-chain" placeholder="Chain Cert" rows="10" style="width: 100%"></textarea>
+            </div>
+            <div class="form-row">
+                <label for="node-config-input-key">Private Key</label>
+                <textarea id="node-config-input-key" placeholder="Private Key" rows="10" style="width: 100%"></textarea>
+            </div> 
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType('grpc-server', {
+    category: 'config',
+    defaults: {
+      port: {
+        value: 5001,
+        required: true,
+        validate: RED.validators.number()
+      },
+      name: { value: '' },
+      server: { value: '' },
+      protoFile: { value: '' },
+      caPrivateKey: { value: '' },
+      cacert: { value: '' },
+      caName: { value: '' },
+      caOrgName: { value: '' },
+      ca: {
+        value: '', validate: function (v) {
+          const ssl = $("#node-config-input-ssl").prop("checked");
+          const selfsigned = $("#node-config-input-selfsigned").prop("checked");
+          if (ssl && selfsigned) {
+            return v.length > 0;
+          }
+          return true;
+        }
+      },
+      chain: {
+        value: '', validate: function (v) {
+          const ssl = $("#node-config-input-ssl").prop("checked");
+          const selfsigned = $("#node-config-input-selfsigned").prop("checked");
+          if (ssl && selfsigned) {
+            return v.length > 0;
+          }
+          return true;
+        }
+      },
+      key: {
+        value: '', validate: function (v) {
+          const ssl = $("#node-config-input-ssl").prop("checked");
+          const selfsigned = $("#node-config-input-selfsigned").prop("checked");
+          if (ssl && selfsigned) {
+            return v.length > 0;
+          }
+          return true;
+        }
+      },
+      mutualTls: { value: false },
+      ssl: { value: false },
+      selfsigned: { value: false },
+      localServer: { value: false },
+    },
+    icon: "grpc.svg",
+    color: "#2DA6B0",
+    label: function () {
+      return (this.name || "localhost") + ":" + this.port;
+    },
+    oneditprepare: function () {
+      var that = this;
+
+      if (!this.selfsigned) {
+        $('#selfsigned').hide();
+      }
+
+      if (!this.ssl) {
+        $('#ssl').hide();
+      }
+
+      $('#node-config-input-ssl').change(function () {
+        if (this.checked) {
+          $('#ssl').show();
+        } else {
+          $('#ssl').hide();
+        }
+      });
+
+      $('#node-config-input-selfsigned').change(function () {
+        if (this.checked) {
+          $('#selfsigned').show();
+        } else {
+          $('#selfsigned').hide();
+        }
+      });
+
+      $("#keygen").click(() => {
+        console.log(this);
+        const { cacert, caPrivateKey } = caCertGen();
+        document.getElementById('node-config-input-ca').value = cacert;
+
+        const serverName = document.getElementById('node-config-input-server').value;
+        const nodeName = document.getElementById('node-config-input-name').value;
+
+        const { cert, privateKey } = certGen(cacert, caPrivateKey, serverName, nodeName);
+        document.getElementById('node-config-input-chain').value = cert;
+        document.getElementById('node-config-input-key').value = privateKey;
+
+        that.caPrivateKey = caPrivateKey;
+        that.cacert = cacert;
+      })
+    }
+  });
+</script>

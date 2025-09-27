@@ -137,11 +137,11 @@ const settings = {
             image: __dirname + "/assets/logo.svg",
             url: "hhttps://www.kyuda.io"
         },
-        deployButton: {
-            type: "simple",
-            label: "Deploy",
-            icon: __dirname + "/assets/deploy-full-o.svg",
-        },
+        // deployButton: {
+        //     type: "simple",
+        //     label: "Deploy",
+        //     icon: __dirname + "/assets/deploy-full-o.svg",
+        // },
         menu: {
             "menu-item-import-library": process.env.NODE_RED_IMPORT_EXPORT === 'yes',
             "menu-item-export-library": process.env.NODE_RED_IMPORT_EXPORT === 'yes',

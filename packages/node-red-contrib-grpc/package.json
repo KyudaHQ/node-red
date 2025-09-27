@@ -1,0 +1,31 @@
+{
+	"name": "@kyuda/node-red-contrib-grpc",
+	"version": "0.0.1",
+	"description": "gRPC for Node-RED",
+	"main": "grpc.js",
+	"node-red": {
+		"nodes": {
+			"grpc-server-config": "src/grpc-server.js",
+			"grpc-register-function": "src/grpc-register-function.js",
+			"grpc-response": "src/grpc-response.js",
+			"grpc-call": "src/grpc-call.js",
+			"grpc-client-streaming": "src/grpc-client-streaming.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/KyudaHQ/node-red.git",
+		"directory": "packages/node-red-contrib-grpc"
+	},
+	"keywords": [
+		"node-red",
+		"grpc"
+	],
+	"dependencies": {
+		"@grpc/grpc-js": "^1.14.0",
+		"@grpc/proto-loader": "^0.8.0",
+		"lodash.get": "^4.4.2"
+	},
+	"author": "ilzenzo",
+	"license": "MIT"
+}

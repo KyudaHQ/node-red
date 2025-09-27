@@ -13,6 +13,7 @@
     "@kyuda/node-red-contrib-rabbitmq-bus": "file:../node-red-contrib-rabbitmq-bus",
     "@kyuda/node-red-contrib-salesforce": "file:../node-red-contrib-salesforce",
     "@kyuda/node-red-contrib-zeebe": "file:../node-red-contrib-zeebe",
-    "@kyuda/node-red-contrib-influxdb": "file:../node-red-contrib-influxdb"
+    "@kyuda/node-red-contrib-influxdb": "file:../node-red-contrib-influxdb",
+    "@kyuda/node-red-contrib-grpc": "file:../node-red-contrib-grpc"
   }
 }

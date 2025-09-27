@@ -1,0 +1,61 @@
+<!-- ***************** gRPC Register function *********************** -->
+<script type="text/x-red" data-template-name="grpc-register-function">
+    <div class="form-row">
+        <label for="node-input-server" style="width: 110px;"><i class="fa fa-bookmark"></i> Server</label>
+        <input type="text" id="node-input-server">
+    </div>	
+    <div class="form-row">
+        <label for="node-input-name" style="width: 110px;"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service" style="width: 110px;"><i class="fa fa-envelope"></i> Service</label>
+        <input type="text" id="node-input-service" placeholder="Service name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-method" style="width: 110px;"><i class="fa fa-tag"></i> Method</label>
+        <input type="text" id="node-input-method" placeholder="Method name">
+    </div>
+ 
+</script>
+
+<script type="text/x-red" data-help-name="grpc-register-function">
+    <p>Creates an gRPC end-point for creating gRPC services. <p> 
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload</dt>
+        <dd>
+            Contains the client call parameters (call.request).
+            Will be null for a for a proto Stream input.
+        </dd>
+        <dt>call</dt>
+        <dd>
+            Contains the client gRPC call to which we have to respond to.
+        </dd>
+    </dl>
+    <p><b>Note:</b> this node does not send any response to the request. The flow
+        must include an gRPC Response node to complete the request.</p>
+        
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('grpc-register-function', {
+        category: 'input',
+        color: "#2DA6B0",
+        defaults: {
+            name: { value: "" },
+            server: { type: "grpc-server", required: true },
+            service: { value: "", required: true },
+            method: { value: "", required: true }
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "grpc.svg",
+        label: function () {
+            return this.name || "gRPC Register";
+        },
+        labelStyle: function () {
+            return (this.name) ? "node_label_italic" : "";
+        }
+    });
+</script>
