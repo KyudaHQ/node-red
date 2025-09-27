@@ -1,6 +1,6 @@
 {
 	"name": "@kyuda/node-red-contrib-grpc",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "gRPC for Node-RED",
 	"main": "grpc.js",
 	"node-red": {
