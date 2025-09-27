@@ -5,7 +5,7 @@
 	"main": "grpc.js",
 	"node-red": {
 		"nodes": {
-			"grpc-server-config": "src/grpc-server.js",
+			"grpc-server": "src/grpc-server.js",
 			"grpc-register-function": "src/grpc-register-function.js",
 			"grpc-response": "src/grpc-response.js",
 			"grpc-call": "src/grpc-call.js",
