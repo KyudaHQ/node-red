@@ -1,256 +1,390 @@
 module.exports = function (RED) {
-  'use strict';
-  var jsforce = require('jsforce');
+    'use strict';
+    const jsforce = require('jsforce');
 
-  function SalesforceConfigNode(config) {
-    RED.nodes.createNode(this, config);
-    var node = this;
+    const DEFAULT_LOGIN_URL = 'https://login.salesforce.com';
 
-    if (config.loginType == "oauth") {
-
-    }
-    if (config.loginType == "Username-Password") {
-      var basicCredentials = {
-        id: node.id,
-        username: config.username,
-        password: node.credentials.password,
-        loginType: 'Username-Password',
-        loginUrl: config.loginUrl
-      };
-      RED.nodes.addCredentials(node.id, basicCredentials);
-    }
-    if (config.loginType == "Signed-Request") {
-      var basicCredentials = {
-        id: node.id,
-        loginType: 'Signed-Request'
-      };
-      RED.nodes.addCredentials(node.id, basicCredentials);
+    function isSessionError(err) {
+        if (!err) {
+            return false;
+        }
+        if (Array.isArray(err)) {
+            return err.some(isSessionError);
+        }
+        const code = err.errorCode || err.name || '';
+        const message = err.message || '';
+        return (
+            (typeof code === 'string' &&
+                code.indexOf('INVALID_SESSION_ID') !== -1) ||
+            (typeof message === 'string' &&
+                message.indexOf('INVALID_SESSION_ID') !== -1)
+        );
     }
 
-    var credentials = RED.nodes.getCredentials(node.id);
+    function setCredential(node, key, value) {
+        if (value === undefined || value === null || value === '') {
+            return;
+        }
+        node.credentials = node.credentials || {};
+        if (node.credentials[key] === value) {
+            return;
+        }
+        node.credentials[key] = value;
+    }
 
-    // The connection.
-    node.conn = null;
+    function SalesforceConfigNode(config) {
+        RED.nodes.createNode(this, config);
+        const node = this;
 
-    node.login = function (msg, callback) {
+        node.credentials = node.credentials || {};
 
-      if (node.conn) {
-        return callback(null, node.conn);
-      }
+        node.loginType =
+            config.loginType ||
+            node.credentials.loginType ||
+            'Username-Password';
+        node.loginUrl =
+            config.loginUrl || node.credentials.loginUrl || DEFAULT_LOGIN_URL;
+        node.username = config.username || node.credentials.username || '';
+        node.apiVersion = config.apiVersion || node.credentials.apiVersion;
 
-      if (credentials.loginType === "oauth") {
+        setCredential(node, 'id', node.id);
+        setCredential(node, 'loginType', node.loginType);
+        setCredential(node, 'loginUrl', node.loginUrl);
+        if (node.username) {
+            setCredential(node, 'username', node.username);
+        }
+        if (node.apiVersion) {
+            setCredential(node, 'apiVersion', node.apiVersion);
+        }
+        RED.nodes.addCredentials(node.id, node.credentials);
 
-        /**
-         * oauth
-         */
+        let activeConn = null;
+        let establishing = null;
 
-        if (!credentials.accessToken || !credentials.refreshToken || !credentials.instanceUrl) {
-          var error = new Error("accessToken, refreshToken or instanceUrl missing");
-          return callback(error);
+        function attachRefreshHandlers(conn) {
+            conn.on('refresh', function (accessToken, res) {
+                setCredential(node, 'accessToken', accessToken);
+                if (res && res.instance_url) {
+                    setCredential(node, 'instanceUrl', res.instance_url);
+                }
+                RED.nodes.addCredentials(node.id, node.credentials);
+            });
         }
 
-        console.log(credentials);
+        async function createUsernamePasswordConnection() {
+            const username = node.username || node.credentials.username;
+            const password = node.credentials.password;
+            if (!username || !password) {
+                throw new Error(
+                    'Salesforce username and password are required'
+                );
+            }
 
-        var conn = new jsforce.Connection({
-          oauth2: {
+            const conn = new jsforce.Connection({
+                loginUrl: node.loginUrl,
+                version: node.apiVersion || undefined,
+            });
+
+            await conn.login(username, password);
+
+            setCredential(node, 'username', username);
+            if (conn.accessToken) {
+                setCredential(node, 'accessToken', conn.accessToken);
+            }
+            if (conn.instanceUrl) {
+                setCredential(node, 'instanceUrl', conn.instanceUrl);
+            }
+            RED.nodes.addCredentials(node.id, node.credentials);
+            attachRefreshHandlers(conn);
+            return conn;
+        }
+
+        async function createOAuthConnection() {
+            const clientId = node.credentials.clientId;
+            const clientSecret = node.credentials.clientSecret;
+            const refreshToken = node.credentials.refreshToken;
+            const accessToken = node.credentials.accessToken;
+            const instanceUrl = node.credentials.instanceUrl;
+            const redirectUri = node.credentials.redirectUri;
+
+            if (!clientId || !clientSecret) {
+                throw new Error(
+                    'Salesforce clientId and clientSecret are required'
+                );
+            }
+            if (!refreshToken) {
+                throw new Error(
+                    'Salesforce refresh token is required. Re-authenticate in the config node.'
+                );
+            }
+
+            const oauth2 = new jsforce.OAuth2({
+                loginUrl: node.loginUrl,
+                clientId,
+                clientSecret,
+                redirectUri,
+            });
+
+            const conn = new jsforce.Connection({
+                loginUrl: node.loginUrl,
+                version: node.apiVersion || undefined,
+                instanceUrl,
+                accessToken,
+                refreshToken,
+                oauth2,
+            });
+
+            attachRefreshHandlers(conn);
+
+            if (!accessToken) {
+                const res = await oauth2.refreshToken(refreshToken);
+                conn.accessToken = res.access_token;
+                conn.instanceUrl = res.instance_url;
+                setCredential(node, 'accessToken', res.access_token);
+                setCredential(node, 'instanceUrl', res.instance_url);
+                RED.nodes.addCredentials(node.id, node.credentials);
+            }
+
+            return conn;
+        }
+
+        function createSignedRequestConnection(msg) {
+            if (!msg) {
+                throw new Error(
+                    'Signed-Request login requires msg.accessToken and msg.instanceUrl'
+                );
+            }
+            const accessToken = msg.accessToken;
+            const instanceUrl = msg.instanceUrl;
+            if (!accessToken || !instanceUrl) {
+                throw new Error(
+                    'Signed-Request login requires msg.accessToken and msg.instanceUrl'
+                );
+            }
+            const conn = new jsforce.Connection({
+                loginUrl: node.loginUrl,
+                version: node.apiVersion || undefined,
+                instanceUrl,
+                accessToken,
+            });
+            return conn;
+        }
+
+        async function establishConnection(msg) {
+            switch (node.loginType) {
+                case 'Username-Password':
+                    return createUsernamePasswordConnection();
+                case 'oauth':
+                    return createOAuthConnection();
+                case 'Signed-Request':
+                    return createSignedRequestConnection(msg);
+                default:
+                    throw new Error(
+                        'Unsupported Salesforce login type: ' + node.loginType
+                    );
+            }
+        }
+
+        node.getConnection = async function (msg) {
+            if (node.loginType === 'Signed-Request') {
+                return establishConnection(msg);
+            }
+
+            if (activeConn) {
+                return activeConn;
+            }
+
+            if (!establishing) {
+                establishing = establishConnection(msg)
+                    .then(function (conn) {
+                        activeConn = conn;
+                        return conn;
+                    })
+                    .catch(function (err) {
+                        activeConn = null;
+                        throw err;
+                    })
+                    .finally(function () {
+                        establishing = null;
+                    });
+            }
+
+            return establishing;
+        };
+
+        node.invalidate = function () {
+            activeConn = null;
+            establishing = null;
+        };
+
+        node.withConnection = async function (msg, handler) {
+            try {
+                const conn = await node.getConnection(msg);
+                return await handler(conn);
+            } catch (err) {
+                if (
+                    isSessionError(err) &&
+                    node.loginType !== 'Signed-Request'
+                ) {
+                    node.invalidate();
+                    const conn = await node.getConnection(msg);
+                    return await handler(conn);
+                }
+                throw err;
+            }
+        };
+
+        node.login = function (msg, callback) {
+            node.getConnection(msg)
+                .then(function (conn) {
+                    callback(null, conn);
+                })
+                .catch(function (err) {
+                    callback(err);
+                });
+        };
+
+        node.on('close', function (done) {
+            node.invalidate();
+            done();
+        });
+    }
+
+    RED.nodes.registerType('salesforce-config', SalesforceConfigNode, {
+        credentials: {
+            id: { type: 'text' },
+            loginUrl: { type: 'text' },
+            loginType: { type: 'text' },
+            username: { type: 'text' },
+            password: { type: 'password' },
+            clientId: { type: 'password' },
+            clientSecret: { type: 'password' },
+            redirectUri: { type: 'text' },
+            accessToken: { type: 'password' },
+            refreshToken: { type: 'password' },
+            instanceUrl: { type: 'text' },
+            apiVersion: { type: 'text' },
+            userId: { type: 'text' },
+        },
+    });
+
+    RED.httpAdmin.get('/force/credentials/:id', function (req, res) {
+        const id = req.params.id;
+        const credentials = RED.nodes.getCredentials(id) || {};
+        return res.json({
+            userId: credentials.userId || null,
+        });
+    });
+
+    RED.httpAdmin.post('/force/credentials/:id/reset', function (req, res) {
+        const id = req.params.id;
+        const credentials = RED.nodes.getCredentials(id) || {};
+        credentials.userId = null;
+        RED.nodes.addCredentials(id, credentials);
+        return res.json({
+            userId: credentials.userId,
+        });
+    });
+
+    RED.httpAdmin.get('/force/credentials/:id/auth', function (req, res) {
+        const id = req.query.id;
+        const salesforceConfig = RED.nodes.getNode(id);
+
+        let clientId;
+        let clientSecret;
+
+        if (salesforceConfig && salesforceConfig.credentials) {
+            clientId =
+                salesforceConfig.credentials.clientId || req.query.clientId;
+            clientSecret =
+                salesforceConfig.credentials.clientSecret ||
+                req.query.clientSecret;
+        } else {
+            clientId = req.query.clientId;
+            clientSecret = req.query.clientSecret;
+        }
+
+        const credentials = {
+            id: id,
+            loginType: 'oauth',
+            loginUrl: req.query.loginUrl,
+            clientId: clientId,
+            clientSecret: clientSecret,
+            redirectUri: req.query.callback,
+        };
+
+        RED.nodes.addCredentials(id, credentials);
+
+        const oauth2 = new jsforce.OAuth2({
             loginUrl: credentials.loginUrl,
             clientId: credentials.clientId,
-            clientsecret: credentials.clientSecret,
-            redirectUri: credentials.redirectUri
-          },
-          accessToken: credentials.accessToken,
-          refreshToken: credentials.refreshToken,
-          instanceUrl: credentials.instanceUrl
+            clientSecret: credentials.clientSecret,
+            redirectUri: credentials.redirectUri,
         });
 
-        // Refresh accessToken using refreshToken
-        // conn.oauth2.refreshToken(credentials.refreshToken, (err, results) => {
-        //   credentials.accessToken = results['access_token'];
-        //   RED.nodes.addCredentials(node.id, credentials);
-        // });
-
-        // Refresh accessToken using refreshToken
-        conn.on("refresh", function (accessToken, res) {
-          console.log("oauthRefresh")
-          credentials.accessToken = accessToken;
-          RED.nodes.addCredentials(node.id, credentials);
+        let authUrl = oauth2.getAuthorizationUrl({
+            scope: 'api id web refresh_token',
         });
+        if (req.query.username) {
+            authUrl = authUrl + '&login_hint=' + req.query.username;
+        }
 
-        node.conn = conn;
-        return callback(null, conn);
-
-      } else if (credentials.loginType === "Username-Password") {
-
-        /**
-         * Username-Password
-         */
-
-        var conn = new jsforce.Connection({
-          loginUrl: credentials.loginUrl
-        });
-
-        conn.login(credentials.username, credentials.password, function (error, userInfo) {
-          if (error) {
-            return callback(error);
-          } else {
-            node.conn = conn;
-            return callback(null, conn);
-          }
-        });
-
-      } else if (credentials.loginType === "Signed-Request") {
-
-        /**
-         * Signed-Request
-         */
-
-        var accessToken = msg.accessToken;
-        var instanceUrl = msg.instanceUrl;
-
-        var conn = new jsforce.Connection({
-          accessToken: accessToken,
-          instanceUrl: instanceUrl
-        });
-
-        node.conn = conn;
-        return callback(null, conn);
-
-      }
-    }
-  }
-
-  RED.nodes.registerType('salesforce-config', SalesforceConfigNode, {
-    credentials: {
-      id: { type: 'text' },
-      loginUrl: { type: 'text' },
-      loginType: { type: 'text' },
-      username: { type: 'text' },
-      password: { type: 'password' },
-      clientId: { type: 'password' },
-      clientSecret: { type: 'password' },
-      accessToken: { type: 'password' },
-      refreshToken: { type: 'password' },
-      instanceUrl: { type: 'text' },
-      userId: { type: 'text' }
-    }
-  });
-
-  RED.httpAdmin.get('/force/credentials/:id', function (req, res) {
-    var id = req.params.id;
-    var credentials = RED.nodes.getCredentials(id);
-    return res.json({
-      userId: credentials.userId
-    })
-  })
-
-  RED.httpAdmin.post('/force/credentials/:id/reset', function (req, res) {
-    var id = req.params.id;
-    var credentials = RED.nodes.getCredentials(id);
-    credentials.userId = null;
-    RED.nodes.addCredentials(id, credentials);
-    return res.json({
-      userId: credentials.userId
-    })
-  })
-
-  RED.httpAdmin.get('/force/credentials/:id/auth', function (req, res) {
-    var id = req.query.id;
-    var salesforceConfig = RED.nodes.getNode(id);
-
-    var clientId, clientSecret;
-    if (salesforceConfig && salesforceConfig.credentials && salesforceConfig.credentials.clientId) {
-      clientId = salesforceConfig.credentials.clientId;
-    } else {
-      clientId = req.query.clientId;
-    }
-    if (salesforceConfig && salesforceConfig.credentials && salesforceConfig.credentials.clientSecret) {
-      clientSecret = salesforceConfig.credentials.clientSecret;
-    } else {
-      clientSecret = req.query.clientSecret;
-    }
-
-    var credentials = {
-      id: id,
-      loginType: 'oauth',
-      loginUrl: req.query.loginUrl,
-      clientId: clientId,
-      clientSecret: clientSecret,
-      redirectUri: req.query.callback
-    };
-
-    // var csrfToken = crypto.randomBytes(18).toString('base64').replace(/\//g, '-').replace(/\+/g, '_');
-    // credentials.csrfToken = csrfToken;
-    // res.cookie('csrf', csrfToken);
-
-    RED.nodes.addCredentials(id, credentials);
-
-    var oauth2 = new jsforce.OAuth2({
-      loginUrl: credentials.loginUrl,
-      clientId: credentials.clientId,
-      clientsecret: credentials.clientSecret,
-      redirectUri: credentials.redirectUri
+        return res.redirect(authUrl);
     });
 
-    // var authUrl = oauth2.getAuthorizationUrl({ state: req.query.id + ":" + csrfToken });
-    var authUrl = oauth2.getAuthorizationUrl({
-      scope: 'api id web refresh_token'
-    });
-    if (req.query.username) authUrl = authUrl + '&login_hint=' + req.query.username;
+    RED.httpAdmin.get(
+        '/force/credentials/:id/auth/callback',
+        function (req, res) {
+            const id = req.params.id;
+            const credentials = RED.nodes.getCredentials(id);
 
-    return res.redirect(authUrl);
-  });
+            if (!req.query.code) {
+                return res.send('ERROR: missing authorization code');
+            }
 
-  RED.httpAdmin.get('/force/credentials/:id/auth/callback', function (req, res) {
-    var id = req.params.id;
-    var credentials = RED.nodes.getCredentials(id);
+            if (
+                !credentials ||
+                !credentials.clientId ||
+                !credentials.clientSecret
+            ) {
+                return res.send('ERROR: missing credentials');
+            }
 
-    if (!req.query.code) {
-      return res.send("ERROR: missing authorization code");
-    }
+            const conn = new jsforce.Connection({
+                oauth2: {
+                    loginUrl: credentials.loginUrl,
+                    clientId: credentials.clientId,
+                    clientSecret: credentials.clientSecret,
+                    redirectUri: credentials.redirectUri,
+                },
+            });
 
-    // var state = req.query.state.split(':');
-    // var id = state[0];
+            conn.authorize(req.query.code, function (err, userInfo) {
+                if (err) {
+                    return res.send(err.message);
+                }
 
-    if (!credentials || !credentials.clientId || !credentials.clientSecret) {
-      return res.send("ERROR: missing credentials");
-    }
-    // if (state[1] !== credentials.csrfToken) {
-    //   return res.status(401).send("CSRF token mismatch, possible cross-site request forgery attempt.");
-    // }
+                const finalCredentials = {
+                    id: id,
+                    loginType: 'oauth',
+                    loginUrl: credentials.loginUrl,
+                    clientId: credentials.clientId,
+                    clientSecret: credentials.clientSecret,
+                    redirectUri: credentials.redirectUri,
+                    accessToken: conn.accessToken,
+                    refreshToken: conn.refreshToken,
+                    instanceUrl: conn.instanceUrl,
+                    userId: userInfo.id,
+                };
 
-    var conn = new jsforce.Connection({
-      oauth2: {
-        loginUrl: credentials.loginUrl,
-        clientId: credentials.clientId,
-        clientSecret: credentials.clientSecret,
-        redirectUri: credentials.redirectUri
-      }
-    });
+                RED.nodes.addCredentials(id, finalCredentials);
 
-    conn.authorize(req.query.code, function (err, userInfo) {
-      if (err) {
-        return res.send(err.message);
-      }
-
-      var finalCredentials = {
-        id: id,
-        loginType: 'oauth',
-        loginUrl: credentials.loginUrl,
-        clientId: credentials.clientId,
-        clientSecret: credentials.clientSecret,
-        redirectUri: credentials.redirectUri,
-        accessToken: conn.accessToken,
-        refreshToken: conn.refreshToken,
-        instanceUrl: conn.instanceUrl,
-        userId: userInfo.id
-      };
-
-      RED.nodes.addCredentials(id, finalCredentials);
-
-      return res.json({
-        message: "Authorised. You can now close this window and go back to Node-RED.",
-        credentials: RED.nodes.getCredentials(id)
-      });
-    });
-  });
-}
+                return res.json({
+                    message:
+                        'Authorised. You can now close this window and go back to Node-RED.',
+                    credentials: RED.nodes.getCredentials(id),
+                });
+            });
+        }
+    );
+};

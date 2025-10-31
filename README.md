@@ -39,6 +39,7 @@ The following environment variables are required to run:
  * `npx lerna publish --force-publish`
  * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:latest ./packages/node-red`
  * `docker buildx build --platform=linux/amd64,linux/arm64 --push --tag kyuda/node-red:2.x.x ./packages/node-red`
+ * Read `WRAPPING_NODE_PACKAGES.md` and `.github/copilot-instructions.md` for repository conventions and automation guidance.
  
 ## Authors
 

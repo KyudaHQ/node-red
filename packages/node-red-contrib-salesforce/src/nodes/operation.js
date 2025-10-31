@@ -1,92 +1,152 @@
 const logger = require('../util/logger');
 const status = require('../util/nodeStatus');
-const salesforceHelper = require('../util/salesforceHelper');
 
 module.exports = function (RED) {
-  'use strict';
+    'use strict';
 
-  function SalesforceOperationNode(config) {
-    RED.nodes.createNode(this, config);
-    var node = this;
+    function SalesforceOperationNode(config) {
+        RED.nodes.createNode(this, config);
+        const node = this;
 
-    node.salesforce = config.salesforce;
-    node.salesforceConfig = RED.nodes.getNode(node.salesforce);
+        node.salesforce = config.salesforce;
+        node.salesforceConfig = RED.nodes.getNode(node.salesforce);
 
-    if (node.salesforceConfig) {
-
-      node.on('input', function (msg) {
-
-        node.sobject = msg.sobject || config.sobject;
-        node.extname = msg.extname || config.extname;
-        node.maxfetch = msg.maxfetch || config.maxfetch;
-        node.operation = msg.operation || config.operation;
-
-        status.info(node, "processing");
-
-        node.sendMsg = function (err, result) {
-          if (err) {
-            node.error(err.message, msg);
+        if (!node.salesforceConfig) {
+            const err = new Error('Missing Salesforce configuration');
+            node.error(err.message);
             status.error(node, err.message);
-          } else {
-            status.clear(node);
-          }
-          msg.payload = result;
-          return node.send(msg);
-        };
+            return;
+        }
 
-        node.salesforceConfig.login(msg, function (err, conn) {
-          if (err) {
-            return node.sendMsg(err);
-          }
-          switch (node.operation) {
+        node.on('input', async function (msg, send, done) {
+            send =
+                send ||
+                function () {
+                    node.send.apply(node, arguments);
+                };
+            done =
+                done ||
+                function (err) {
+                    if (err) {
+                        node.error(err, msg);
+                    }
+                };
 
-            case 'query':
-              var records = [];
-              //msg.payload = salesforceHelper.convType(msg.payload, 'string');
-              var query = conn.query(msg.payload)
-                .on("record", function (record) {
-                  records.push(record);
-                })
-                .on("end", function () {
-                  node.sendMsg(null, records);
-                })
-                .on("error", function (err) {
-                  node.sendMsg(err);
-                })
-                .run({ autoFetch: true, maxFetch: node.maxfetch });
-              break;
+            const sobject = msg.sobject || config.sobject;
+            const extname = msg.extname || config.extname;
+            const operation = (
+                msg.operation ||
+                config.operation ||
+                ''
+            ).toLowerCase();
+            const maxFetchValue = msg.maxfetch || config.maxfetch;
+            const maxFetch = parseInt(maxFetchValue, 10);
 
-            case 'create':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.sobject(node.sobject).create(msg.payload, node.sendMsg);
-              break;
+            status.info(node, 'processing');
 
-            case 'update':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.sobject(node.sobject).update(msg.payload, node.sendMsg);
-              break;
+            try {
+                const result = await node.salesforceConfig.withConnection(
+                    msg,
+                    async function (conn) {
+                        switch (operation) {
+                            case 'query': {
+                                if (
+                                    !msg.payload ||
+                                    typeof msg.payload !== 'string'
+                                ) {
+                                    throw new Error(
+                                        'SOQL query must be provided in msg.payload'
+                                    );
+                                }
+                                const options = { autoFetch: true };
+                                if (!isNaN(maxFetch) && maxFetch > 0) {
+                                    options.maxFetch = maxFetch;
+                                }
+                                const queryResult = await conn
+                                    .query(msg.payload)
+                                    .run(options);
+                                msg.sfResponse = queryResult;
+                                return queryResult.records || [];
+                            }
 
-            case 'upsert':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.sobject(node.sobject).upsert(msg.payload, node.extname, node.sendMsg);
-              break;
+                            case 'create': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for create'
+                                    );
+                                }
+                                return conn
+                                    .sobject(sobject)
+                                    .create(msg.payload);
+                            }
 
-            case 'delete':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.sobject(node.sobject).destroy(msg.payload, node.sendMsg);
-              break;
+                            case 'update': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for update'
+                                    );
+                                }
+                                return conn
+                                    .sobject(sobject)
+                                    .update(msg.payload);
+                            }
 
-          }
+                            case 'upsert': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for upsert'
+                                    );
+                                }
+                                if (!extname) {
+                                    throw new Error(
+                                        'External Id field name is required for upsert'
+                                    );
+                                }
+                                return conn
+                                    .sobject(sobject)
+                                    .upsert(msg.payload, extname);
+                            }
+
+                            case 'delete': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for delete'
+                                    );
+                                }
+                                return conn
+                                    .sobject(sobject)
+                                    .destroy(msg.payload);
+                            }
+
+                            default:
+                                throw new Error(
+                                    'Unsupported Salesforce operation: ' +
+                                        operation
+                                );
+                        }
+                    }
+                );
+
+                msg.payload = result;
+
+                if (operation === 'query') {
+                    const size = Array.isArray(result) ? result.length : 0;
+                    status.success(node, size + ' records');
+                } else {
+                    status.success(node, operation + ' ok');
+                }
+
+                send(msg);
+                done();
+            } catch (err) {
+                msg.error = err;
+                status.error(node, err.message);
+                node.error(err.message, msg);
+                send(msg);
+                done(err);
+            }
         });
-      });
-
-    } else {
-      var err = new Error('missing force configuration');
-      node.error(err.message, msg);
-      status.error(node, err.message);
     }
 
-  }
-
-  RED.nodes.registerType('salesforce-operation', SalesforceOperationNode);
-}
+    RED.nodes.registerType('salesforce-operation', SalesforceOperationNode);
+};

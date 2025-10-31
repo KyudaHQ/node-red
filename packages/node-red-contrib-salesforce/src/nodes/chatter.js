@@ -1,64 +1,86 @@
 const logger = require('../util/logger');
 const status = require('../util/nodeStatus');
-const salesforceHelper = require('../util/salesforceHelper');
 
 module.exports = function (RED) {
-  'use strict';
+    'use strict';
 
-  function SalesforceChatterNode(config) {
-    RED.nodes.createNode(this, config);
-    var node = this;
+    function SalesforceChatterNode(config) {
+        RED.nodes.createNode(this, config);
+        const node = this;
 
-    node.salesforce = config.salesforce;
-    node.salesforceConfig = RED.nodes.getNode(node.salesforce);
+        node.salesforce = config.salesforce;
+        node.salesforceConfig = RED.nodes.getNode(node.salesforce);
 
-    if (node.salesforceConfig) {
-
-      node.on('input', function (msg) {
-
-        node.path = msg.path || config.path;
-        node.operation = msg.operation || config.operation;
-
-        status.info(node, "processing");
-
-        node.sendMsg = function (err, result) {
-          if (err) {
-            node.error(err.message, msg);
+        if (!node.salesforceConfig) {
+            const err = new Error('Missing Salesforce configuration');
+            node.error(err.message);
             status.error(node, err.message);
-          } else {
-            status.clear(node);
-          }
-          msg.payload = result;
-          return node.send(msg);
-        };
+            return;
+        }
 
-        node.salesforceConfig.login(msg, function (err, conn) {
-          if (err) {
-            return node.sendMsg(err);
-          }
-          switch (node.operation) {
+        node.on('input', async function (msg, send, done) {
+            send =
+                send ||
+                function () {
+                    node.send.apply(node, arguments);
+                };
+            done =
+                done ||
+                function (err) {
+                    if (err) {
+                        node.error(err, msg);
+                    }
+                };
 
-            case 'retrieve':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.chatter.resource(node.path).retrieve(node.sendMsg);
-              break;
+            const path = msg.path || config.path;
+            const operation = (
+                msg.operation ||
+                config.operation ||
+                ''
+            ).toLowerCase();
 
-            case 'create':
-              //msg.payload = salesforceHelper.convType(msg.payload, 'object');
-              conn.chatter.resource(node.path).create(msg.payload, node.sendMsg);
-              break;
-              
-          }
+            if (!path) {
+                const err = new Error('Chatter resource path is required');
+                status.error(node, err.message);
+                node.error(err.message, msg);
+                done(err);
+                return;
+            }
+
+            status.info(node, 'processing');
+
+            try {
+                const result = await node.salesforceConfig.withConnection(
+                    msg,
+                    async function (conn) {
+                        const resource = conn.chatter.resource(path);
+                        switch (operation) {
+                            case 'retrieve':
+                                return resource.retrieve();
+                            case 'create':
+                                return resource.create(msg.payload);
+                            default:
+                                throw new Error(
+                                    'Unsupported Chatter operation: ' +
+                                        operation
+                                );
+                        }
+                    }
+                );
+
+                msg.payload = result;
+                status.success(node, operation + ' ok');
+                send(msg);
+                done();
+            } catch (err) {
+                msg.error = err;
+                status.error(node, err.message);
+                node.error(err.message, msg);
+                send(msg);
+                done(err);
+            }
         });
-      });
-
-    } else {
-      var err = new Error('missing force configuration');
-      node.error(err.message, msg);
-      status.error(node, err.message);
     }
 
-  }
-
-  RED.nodes.registerType('salesforce-chatter', SalesforceChatterNode);
-}
+    RED.nodes.registerType('salesforce-chatter', SalesforceChatterNode);
+};
