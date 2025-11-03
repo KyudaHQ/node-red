@@ -154,7 +154,9 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             const msg = await messagePromise;
 
             expect(msg.sfResponse).toBeDefined();
-            expect(msg.sfResponse.records).toHaveLength(1);
+            expect(msg.sfResponse.totalSize).toBe(1);
+            expect(msg.sfResponse.done).toBe(true);
+            expect(msg.sfResponse.fetched).toBe(1);
             expect(msg.payload).toHaveLength(1);
             expect(msg.payload[0].Id).toBe('001000000000001');
 
@@ -207,6 +209,151 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             const conn = jsforce.__mock.connections[0];
             const sobject = conn._sobjects.Account;
             expect(sobject.create).toHaveBeenCalledWith(payload);
+        });
+
+        test('performs SOSL search and returns matched records', async () => {
+            const configId = 'config-search';
+            const opId = 'op-search';
+            const helperId = 'helper-search';
+            const flowId = 'flow-search';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Search Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: opId,
+                    type: 'salesforce-operation',
+                    name: 'search',
+                    salesforce: configId,
+                    operation: 'search',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, operationNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const messagePromise = new Promise((resolve) => {
+                helperNode.on('input', resolve);
+            });
+
+            const opNode = helper.getNode(opId);
+            opNode.receive({ payload: 'FIND {Acme}' });
+
+            const msg = await messagePromise;
+
+            expect(Array.isArray(msg.payload)).toBe(true);
+            expect(msg.payload).toHaveLength(1);
+            expect(msg.sfResponse.searchRecords).toBeDefined();
+
+            const conn = jsforce.__mock.connections[0];
+            expect(conn.search).toHaveBeenCalledWith('FIND {Acme}');
+        });
+
+        test('describes sObject metadata', async () => {
+            const configId = 'config-describe';
+            const opId = 'op-describe';
+            const helperId = 'helper-describe';
+            const flowId = 'flow-describe';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Describe Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: opId,
+                    type: 'salesforce-operation',
+                    name: 'describe',
+                    salesforce: configId,
+                    sobject: 'Account',
+                    operation: 'describe',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, operationNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const messagePromise = new Promise((resolve) => {
+                helperNode.on('input', resolve);
+            });
+
+            const opNode = helper.getNode(opId);
+            opNode.receive({});
+
+            const msg = await messagePromise;
+
+            expect(msg.payload.name).toBe('Account');
+
+            const conn = jsforce.__mock.connections[0];
+            const sobject = conn._sobjects.Account;
+            expect(sobject.describe).toHaveBeenCalled();
+        });
+
+        test('retrieves records by Id', async () => {
+            const configId = 'config-retrieve';
+            const opId = 'op-retrieve';
+            const helperId = 'helper-retrieve';
+            const flowId = 'flow-retrieve';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Retrieve Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: opId,
+                    type: 'salesforce-operation',
+                    name: 'retrieve',
+                    salesforce: configId,
+                    sobject: 'Account',
+                    operation: 'retrieve',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, operationNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const messagePromise = new Promise((resolve) => {
+                helperNode.on('input', resolve);
+            });
+
+            const opNode = helper.getNode(opId);
+            opNode.receive({ payload: ['001000000000001', '001000000000002'] });
+
+            const msg = await messagePromise;
+
+            expect(Array.isArray(msg.payload)).toBe(true);
+            expect(msg.payload).toHaveLength(2);
+
+            const conn = jsforce.__mock.connections[0];
+            const sobject = conn._sobjects.Account;
+            expect(sobject.retrieve).toHaveBeenCalledWith([
+                '001000000000001',
+                '001000000000002',
+            ]);
         });
     });
 
@@ -329,6 +476,7 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
                     name: 'stream',
                     salesforce: configId,
                     topic: '/topic/ExampleTopic',
+                    replayId: '42',
                     z: flowId,
                     wires: [[helperId]],
                 },
@@ -347,11 +495,51 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             });
 
             const subscription = conn._subscriptions[0];
+            expect(subscription.replayId).toBe(42);
             subscription.handler({ event: { replayId: 1 }, sobject: { Id: 'evt' } });
 
             const msg = await messagePromise;
             expect(msg.payload.sobject.Id).toBe('evt');
             expect(conn.streaming.topic).toHaveBeenCalledWith('/topic/ExampleTopic');
+        });
+
+        test('subscribes to generic channel paths', async () => {
+            const configId = 'config-emp';
+            const streamId = 'stream-emp';
+            const helperId = 'helper-emp';
+            const flowId = 'flow-emp';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'EMP Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: streamId,
+                    type: 'salesforce-stream',
+                    name: 'emp',
+                    salesforce: configId,
+                    topic: '/event/Example__e',
+                    replayId: '-1',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, streamNode], flow, { [configId]: CREDENTIALS });
+
+            await waitFor(() => jsforce.__mock.connections.length > 0);
+            const conn = jsforce.__mock.connections[0];
+            await waitFor(() => conn._subscriptions.length > 0, { timeout: 1000 });
+
+            const subscription = conn._subscriptions[0];
+            expect(conn.streaming.channel).toHaveBeenCalledWith('/event/Example__e');
+            expect(subscription.replayId).toBe(-1);
         });
     });
 });

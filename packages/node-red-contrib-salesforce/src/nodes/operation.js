@@ -50,23 +50,48 @@ module.exports = function (RED) {
                     async function (conn) {
                         switch (operation) {
                             case 'query': {
-                                if (
-                                    !msg.payload ||
-                                    typeof msg.payload !== 'string'
-                                ) {
+                                const soql = msg.payload;
+                                if (!soql || typeof soql !== 'string') {
                                     throw new Error(
                                         'SOQL query must be provided in msg.payload'
                                     );
                                 }
+
                                 const options = { autoFetch: true };
                                 if (!isNaN(maxFetch) && maxFetch > 0) {
                                     options.maxFetch = maxFetch;
                                 }
-                                const queryResult = await conn
-                                    .query(msg.payload)
-                                    .run(options);
-                                msg.sfResponse = queryResult;
-                                return queryResult.records || [];
+
+                                const query = conn.query(soql);
+                                const records = await query.run(options);
+                                const totalSize =
+                                    typeof query.totalSize === 'number'
+                                        ? query.totalSize
+                                        : records.length;
+                                const fetched =
+                                    typeof query.totalFetched === 'number'
+                                        ? query.totalFetched
+                                        : records.length;
+                                msg.sfResponse = {
+                                    totalSize,
+                                    done: query.done,
+                                    fetched,
+                                };
+                                return records;
+                            }
+
+                            case 'search': {
+                                const sosl = msg.payload;
+                                if (!sosl || typeof sosl !== 'string') {
+                                    throw new Error(
+                                        'SOSL query must be provided in msg.payload'
+                                    );
+                                }
+                                const searchResult = await conn.search(sosl);
+                                msg.sfResponse = searchResult;
+                                return (
+                                    searchResult.searchRecords || searchResult
+                                );
                             }
 
                             case 'create': {
@@ -118,6 +143,53 @@ module.exports = function (RED) {
                                     .destroy(msg.payload);
                             }
 
+                            case 'retrieve': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for retrieve'
+                                    );
+                                }
+                                let recordIds =
+                                    msg.payload !== undefined
+                                        ? msg.payload
+                                        : msg.ids;
+                                if (
+                                    recordIds &&
+                                    typeof recordIds === 'object' &&
+                                    !Array.isArray(recordIds) &&
+                                    recordIds !== null &&
+                                    recordIds.Id
+                                ) {
+                                    recordIds = recordIds.Id;
+                                }
+                                if (
+                                    recordIds === undefined ||
+                                    recordIds === null ||
+                                    (typeof recordIds !== 'string' &&
+                                        !Array.isArray(recordIds))
+                                ) {
+                                    throw new Error(
+                                        'Record Id or array of Ids is required in msg.payload'
+                                    );
+                                }
+                                return conn
+                                    .sobject(sobject)
+                                    .retrieve(recordIds);
+                            }
+
+                            case 'describe': {
+                                if (!sobject) {
+                                    throw new Error(
+                                        'Salesforce sObject is required for describe'
+                                    );
+                                }
+                                return conn.sobject(sobject).describe();
+                            }
+
+                            case 'describeglobal': {
+                                return conn.describeGlobal();
+                            }
+
                             default:
                                 throw new Error(
                                     'Unsupported Salesforce operation: ' +
@@ -128,13 +200,37 @@ module.exports = function (RED) {
                 );
 
                 msg.payload = result;
-
-                if (operation === 'query') {
-                    const size = Array.isArray(result) ? result.length : 0;
-                    status.success(node, size + ' records');
-                } else {
-                    status.success(node, operation + ' ok');
+                let statusMessage;
+                switch (operation) {
+                    case 'query': {
+                        const size = Array.isArray(result) ? result.length : 0;
+                        statusMessage = size + ' records';
+                        break;
+                    }
+                    case 'search': {
+                        const matches = Array.isArray(result)
+                            ? result.length
+                            : 0;
+                        statusMessage = matches + ' matches';
+                        break;
+                    }
+                    case 'describe':
+                        statusMessage = 'describe ok';
+                        break;
+                    case 'describeglobal':
+                        statusMessage = 'describe global ok';
+                        break;
+                    case 'retrieve':
+                        statusMessage = 'retrieve ok';
+                        break;
+                    default: {
+                        const label = operation || 'operation';
+                        statusMessage = label + ' ok';
+                        break;
+                    }
                 }
+
+                status.success(node, statusMessage);
 
                 send(msg);
                 done();

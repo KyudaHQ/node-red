@@ -8,7 +8,8 @@ This module leverages the [JSforce](https://github.com/jsforce/jsforce) client l
 
 ## What’s Included
 - Config node supporting Username/Password and OAuth 2.0 flows with automatic token refresh.
-- Runtime nodes for CRUD operations, Apex REST invocations, Chatter API calls, and Streaming events.
+- Runtime nodes for CRUD operations, SOQL/SOSL, metadata describes, Apex REST invocations, Chatter API calls, and Streaming events.
+- Stream listeners now support replay Ids and EMP channel paths (topics, platform events, change data capture).
 - Updated for JSforce v3 with promise-based internals and improved error handling.
 
 ## Credits

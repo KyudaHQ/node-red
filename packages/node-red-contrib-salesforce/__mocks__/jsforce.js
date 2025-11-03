@@ -16,21 +16,32 @@ class MockConnection extends EventEmitter {
         });
         this.query = jest.fn((soql) => {
             this.lastQuery = soql;
+            const queryState = {
+                totalSize: 1,
+                totalFetched: 1,
+                done: true,
+            };
+            const records = [
+                {
+                    Id: '001000000000001',
+                    Name: 'Acme',
+                },
+            ];
             const runMock = jest.fn(async (opts = {}) => {
                 this.lastQueryOptions = opts;
-                return {
-                    done: true,
-                    totalSize: 1,
-                    records: [
-                        {
-                            Id: '001000000000001',
-                            Name: 'Acme',
-                        },
-                    ],
-                };
+                return records;
             });
             return {
                 run: runMock,
+                get totalSize() {
+                    return queryState.totalSize;
+                },
+                get totalFetched() {
+                    return queryState.totalFetched;
+                },
+                get done() {
+                    return queryState.done;
+                },
             };
         });
         this._sobjects = {};
@@ -59,10 +70,44 @@ class MockConnection extends EventEmitter {
                         id: Array.isArray(payload) ? undefined : payload,
                         payload,
                     })),
+                    retrieve: jest.fn(async (ids) => {
+                        if (Array.isArray(ids)) {
+                            return ids.map((id) => ({
+                                Id: id,
+                                sobject: name,
+                            }));
+                        }
+                        return {
+                            Id: ids,
+                            sobject: name,
+                        };
+                    }),
+                    describe: jest.fn(async () => ({
+                        name,
+                        fields: [],
+                    })),
                 };
             }
             return this._sobjects[name];
         });
+        this.search = jest.fn(async (sosl) => ({
+            searchRecords: [
+                {
+                    attributes: {
+                        type: 'Account',
+                        url: '/services/data/vXX.X/sobjects/Account/001000000000001',
+                    },
+                    Id: '001000000000001',
+                    Name: 'Acme',
+                    _query: sosl,
+                },
+            ],
+        }));
+        this.describeGlobal = jest.fn(async () => ({
+            encoding: 'UTF-8',
+            maxBatchSize: 200,
+            sobjects: [],
+        }));
         this.apex = {
             get: jest.fn(async (path) => ({ method: 'get', path })),
             post: jest.fn(async (path, body) => ({ method: 'post', path, body })),
@@ -85,10 +130,38 @@ class MockConnection extends EventEmitter {
         this._subscriptions = [];
         this.streaming = {
             topic: jest.fn((topicName) => {
-                const subscribe = jest.fn((handler) => {
+                const subscribe = jest.fn((handler, replay) => {
+                    const replayId =
+                        typeof replay === 'number'
+                            ? replay
+                            : replay && typeof replay.replayId !== 'undefined'
+                            ? replay.replayId
+                            : undefined;
                     const subscription = {
                         topic: topicName,
                         handler,
+                        replayId,
+                        cancel: jest.fn(),
+                        unsubscribe: jest.fn(),
+                    };
+                    this._subscriptions.push(subscription);
+                    return subscription;
+                });
+                return { subscribe };
+            }),
+            channel: jest.fn((channelName) => {
+                const subscribe = jest.fn((handler, opts) => {
+                    const replayId =
+                        typeof opts === 'number'
+                            ? opts
+                            : opts && typeof opts.replayId !== 'undefined'
+                            ? opts.replayId
+                            : undefined;
+                    const subscription = {
+                        channel: channelName,
+                        handler,
+                        options: opts,
+                        replayId,
                         cancel: jest.fn(),
                         unsubscribe: jest.fn(),
                     };
