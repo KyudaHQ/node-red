@@ -34,6 +34,7 @@ The following environment variables are required to run:
  * `nvm use 20`
  * `cd packages/node-red`
  * `npm install`
+ * Or use `pnpm install` from the repo root
  * `npm run dev`
  * `npx lerna publish`
  * `npx lerna publish --force-publish`
