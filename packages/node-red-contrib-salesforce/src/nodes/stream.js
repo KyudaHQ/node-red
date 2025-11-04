@@ -362,28 +362,7 @@ module.exports = function (RED) {
                                 ? channelPath
                                 : '/topic/' + channelPath;
 
-                        node.log(
-                            'Salesforce stream preparing subscription for ' +
-                                canonicalChannel
-                        );
-
                         const handleMessage = function (message) {
-                            const replayValueRaw = getReplayId(message);
-                            const replayValue =
-                                normalizeReplayValue(replayValueRaw);
-                            if (replayValue !== undefined) {
-                                node.log(
-                                    'Salesforce stream received replay ' +
-                                        replayValue +
-                                        ' on ' +
-                                        canonicalChannel
-                                );
-                            } else {
-                                node.log(
-                                    'Salesforce stream received message without replay id on ' +
-                                        canonicalChannel
-                                );
-                            }
                             status.successRing(
                                 node,
                                 formatStatusMessage(message)
@@ -395,11 +374,6 @@ module.exports = function (RED) {
                         disposeActiveClient();
 
                         if (replay === undefined) {
-                            node.log(
-                                'Salesforce stream subscribing to ' +
-                                    canonicalChannel +
-                                    ' (tailing latest events)'
-                            );
                             subscription = streaming.subscribe(
                                 channelPath,
                                 handleMessage
@@ -421,12 +395,6 @@ module.exports = function (RED) {
                             replayExtension = ensureReplayExtension(
                                 canonicalChannel,
                                 targetReplay
-                            );
-                            node.log(
-                                'Salesforce stream subscribing to ' +
-                                    canonicalChannel +
-                                    ' with replay ' +
-                                    targetReplay
                             );
 
                             activeClient = streaming.createClient([
@@ -502,24 +470,14 @@ module.exports = function (RED) {
                             });
                         }
 
-                        node.log(
-                            'Salesforce stream subscription established for ' +
-                                canonicalChannel +
-                                (replayExtension &&
-                                replayExtension._replay != null
-                                    ? ' (replay ' +
-                                      replayExtension._replay +
-                                      ')'
-                                    : ' (tailing latest)')
-                        );
-
-                        const listeningMsg =
+                        const replayMsgPart =
                             replayExtension && replayExtension._replay != null
-                                ? 'listening (replay ' +
-                                  replayExtension._replay +
-                                  ')'
-                                : 'listening';
-                        status.infoRing(node, listeningMsg);
+                                ? '(replay ' + replayExtension._replay + ')'
+                                : '';
+                        const subscribeMsg =
+                            'Subscribed to ' + canonicalChannel + replayMsgPart;
+                        status.infoRing(node, subscribeMsg);
+                        node.log(subscribeMsg);
                     }
                 );
             } catch (err) {
@@ -527,6 +485,7 @@ module.exports = function (RED) {
                 // Only schedule reconnects for retryable errors to avoid looping on misconfiguration.
                 status.error(node, err.message);
                 node.error(err.message);
+                node.log(err.message);
                 scheduleReconnect(err);
             }
         }

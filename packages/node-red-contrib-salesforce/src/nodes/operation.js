@@ -203,7 +203,10 @@ module.exports = function (RED) {
                 let statusMessage;
                 switch (operation) {
                     case 'query': {
-                        const size = Array.isArray(result) ? result.length : 0;
+                        const records = result.records;
+                        const size = Array.isArray(records)
+                            ? records.length
+                            : 0;
                         statusMessage = size + ' records';
                         break;
                     }
