@@ -73,10 +73,11 @@ module.exports = function (RED) {
                 send(msg);
                 done();
             } catch (err) {
+                // Connection acquisition or Chatter call failures surface here after awaiting
+                // the operation. Report via node.error and signal completion without emitting.
                 msg.error = err;
                 status.error(node, err.message);
                 node.error(err.message, msg);
-                send(msg);
                 done(err);
             }
         });

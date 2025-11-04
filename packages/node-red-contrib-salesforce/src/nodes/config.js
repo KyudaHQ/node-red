@@ -3,6 +3,7 @@ module.exports = function (RED) {
     const jsforce = require('jsforce');
 
     const DEFAULT_LOGIN_URL = 'https://login.salesforce.com';
+    const DEFAULT_API_VERSION = '61.0';
 
     function isSessionError(err) {
         if (!err) {
@@ -45,7 +46,10 @@ module.exports = function (RED) {
         node.loginUrl =
             config.loginUrl || node.credentials.loginUrl || DEFAULT_LOGIN_URL;
         node.username = config.username || node.credentials.username || '';
-        node.apiVersion = config.apiVersion || node.credentials.apiVersion;
+        node.apiVersion =
+            config.apiVersion ||
+            node.credentials.apiVersion ||
+            DEFAULT_API_VERSION;
 
         setCredential(node, 'id', node.id);
         setCredential(node, 'loginType', node.loginType);

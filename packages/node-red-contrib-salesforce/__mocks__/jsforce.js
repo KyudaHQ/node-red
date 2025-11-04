@@ -8,29 +8,36 @@ class MockConnection extends EventEmitter {
     constructor(options = {}) {
         super();
         this.options = options;
+        this.version = options.version;
         this.login = jest.fn(async (username, password) => {
             this.username = username;
             this.password = password;
             this.accessToken = `TOKEN-${connectionCounter}`;
             this.instanceUrl = 'https://example.my.salesforce.com';
         });
-        this.query = jest.fn((soql) => {
-            this.lastQuery = soql;
+        const createQueryResult = (overrides = {}) => {
             const queryState = {
-                totalSize: 1,
-                totalFetched: 1,
-                done: true,
+                totalSize: overrides.totalSize || 1,
+                totalFetched: overrides.totalFetched || 1,
+                done:
+                    typeof overrides.done === 'boolean'
+                        ? overrides.done
+                        : true,
+                nextRecordsUrl: overrides.nextRecordsUrl || null,
+                records:
+                    overrides.records || [
+                        {
+                            Id: '001000000000001',
+                            Name: 'Acme',
+                        },
+                    ],
             };
-            const records = [
-                {
-                    Id: '001000000000001',
-                    Name: 'Acme',
-                },
-            ];
+
             const runMock = jest.fn(async (opts = {}) => {
                 this.lastQueryOptions = opts;
-                return records;
+                return queryState.records;
             });
+
             return {
                 run: runMock,
                 get totalSize() {
@@ -42,7 +49,28 @@ class MockConnection extends EventEmitter {
                 get done() {
                     return queryState.done;
                 },
+                get nextRecordsUrl() {
+                    return queryState.nextRecordsUrl;
+                },
             };
+        };
+
+        this.query = jest.fn((soql) => {
+            this.lastQuery = soql;
+            return createQueryResult();
+        });
+        this.queryMore = jest.fn((locator) => {
+            this.lastQueryMore = locator;
+            return createQueryResult({
+                totalSize: 100,
+                totalFetched: 20,
+                done: false,
+                nextRecordsUrl: '/query/nextChunk',
+                records: Array.from({ length: 20 }).map((_, idx) => ({
+                    Id: '001000000000' + (10 + idx),
+                    Name: 'Chunk ' + idx,
+                })),
+            });
         });
         this._sobjects = {};
         this.sobject = jest.fn((name) => {
@@ -128,47 +156,73 @@ class MockConnection extends EventEmitter {
             }),
         };
         this._subscriptions = [];
+        this._streamingClients = [];
+
+        const makeSubscription = (channel, handler, replayId) => {
+            const emitter = new EventEmitter();
+            const subscription = Object.assign(emitter, {
+                channel,
+                handler,
+                replayId,
+                cancel: jest.fn(),
+                unsubscribe: jest.fn(),
+                errback: jest.fn((cb) => {
+                    subscription._errback = cb;
+                }),
+                invokeErrback(error) {
+                    if (subscription._errback) {
+                        subscription._errback(error);
+                    }
+                },
+            });
+            this._subscriptions.push(subscription);
+            return subscription;
+        };
+
         this.streaming = {
-            topic: jest.fn((topicName) => {
-                const subscribe = jest.fn((handler, replay) => {
-                    const replayId =
-                        typeof replay === 'number'
-                            ? replay
-                            : replay && typeof replay.replayId !== 'undefined'
-                            ? replay.replayId
-                            : undefined;
-                    const subscription = {
-                        topic: topicName,
-                        handler,
-                        replayId,
-                        cancel: jest.fn(),
-                        unsubscribe: jest.fn(),
-                    };
-                    this._subscriptions.push(subscription);
-                    return subscription;
-                });
-                return { subscribe };
+            subscribe: jest.fn((name, handler) => {
+                const channelName =
+                    typeof name === 'string' && name.startsWith('/')
+                        ? name
+                        : '/topic/' + name;
+                return makeSubscription(channelName, handler);
             }),
-            channel: jest.fn((channelName) => {
-                const subscribe = jest.fn((handler, opts) => {
-                    const replayId =
-                        typeof opts === 'number'
-                            ? opts
-                            : opts && typeof opts.replayId !== 'undefined'
-                            ? opts.replayId
-                            : undefined;
-                    const subscription = {
-                        channel: channelName,
+            topic: jest.fn((topicName) => ({
+                subscribe: jest.fn((handler) =>
+                    makeSubscription(topicName, handler)
+                ),
+            })),
+            channel: jest.fn((channelName) => ({
+                subscribe: jest.fn((handler) =>
+                    makeSubscription(channelName, handler)
+                ),
+            })),
+            createClient: jest.fn((extensions = []) => {
+                const client = new EventEmitter();
+                client._extensions = extensions;
+                client.subscribe = jest.fn((channel, handler) => {
+                    const replayExt = extensions.find(
+                        (ext) =>
+                            ext &&
+                            typeof ext === 'object' &&
+                            typeof ext._channel === 'string'
+                    );
+                    const replayId = replayExt ? replayExt._replay : undefined;
+                    const subscription = makeSubscription(
+                        channel,
                         handler,
-                        options: opts,
-                        replayId,
-                        cancel: jest.fn(),
-                        unsubscribe: jest.fn(),
-                    };
-                    this._subscriptions.push(subscription);
+                        replayId
+                    );
+                    subscription.extensions = extensions;
                     return subscription;
                 });
-                return { subscribe };
+                client.bind = jest
+                    .fn((eventName, handler) => client.on(eventName, handler));
+                client.unbind = jest
+                    .fn((eventName, handler) => client.off(eventName, handler));
+                client.disconnect = jest.fn();
+                this._streamingClients.push(client);
+                return client;
             }),
         };
         this.authorize = jest.fn(async () => ({ id: 'https://login.salesforce.com/id/ORG/USER' }));

@@ -12,6 +12,10 @@ This module leverages the [JSforce](https://github.com/jsforce/jsforce) client l
 - Stream listeners now support replay Ids and EMP channel paths (topics, platform events, change data capture).
 - Updated for JSforce v3 with promise-based internals and improved error handling.
 
+## API Version
+- Default Salesforce API version is 61.0 so streaming payloads include newer fields such as `EventUuid`.
+- Override the API version per config node in the editor when connecting to older orgs that require it.
+
 ## Credits
 
 The package is developed and maintained by [Kyuda](https://www.kyuda.io/).

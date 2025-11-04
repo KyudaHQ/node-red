@@ -77,10 +77,12 @@ module.exports = function (RED) {
                 send(msg);
                 done();
             } catch (err) {
+                // Any rejection from acquiring the connection or executing the Apex REST call
+                // will land here, after the awaited operation resolves. Report via node.error
+                // and let done(err) signal the runtime without emitting the faulty message.
                 msg.error = err;
                 status.error(node, err.message);
                 node.error(err.message, msg);
-                send(msg);
                 done(err);
             }
         });

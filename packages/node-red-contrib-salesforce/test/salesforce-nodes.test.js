@@ -1,4 +1,5 @@
 jest.mock('jsforce');
+jest.mock('jsforce/api/streaming');
 
 const helper = require('node-red-node-test-helper');
 const jsforce = require('jsforce');
@@ -68,6 +69,7 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             const node = helper.getNode('config');
 
             const firstResult = await node.withConnection({}, async (conn) => {
+                expect(conn.options.version).toBe('61.0');
                 expect(conn.login).toHaveBeenCalledWith('user@example.com', 's3cret');
                 return 'first';
             });
@@ -76,10 +78,35 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
 
             const secondResult = await node.withConnection({}, async (conn) => {
                 expect(conn.login).toHaveBeenCalledTimes(1);
+                expect(conn.options.version).toBe('61.0');
                 return 'second';
             });
             expect(secondResult).toBe('second');
             expect(jsforce.__mock.connections.length).toBe(1);
+        });
+
+        test('respects configured API version when provided', async () => {
+            const flow = [
+                {
+                    id: 'config',
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                    apiVersion: '55.0',
+                },
+            ];
+
+            await helper.load([configNode], flow, { config: CREDENTIALS });
+            const node = helper.getNode('config');
+
+            const result = await node.withConnection({}, async (conn) => {
+                expect(conn.options.version).toBe('55.0');
+                return 'ok';
+            });
+
+            expect(result).toBe('ok');
         });
 
         test('re-establishes connection after INVALID_SESSION_ID', async () => {
@@ -258,6 +285,54 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             expect(conn.search).toHaveBeenCalledWith('FIND {Acme}');
         });
 
+        test('does not emit message when operation fails', async () => {
+            const configId = 'config-error';
+            const opId = 'op-error';
+            const helperId = 'helper-error';
+            const flowId = 'flow-error';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Error Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: opId,
+                    type: 'salesforce-operation',
+                    name: 'create',
+                    salesforce: configId,
+                    operation: 'create',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, operationNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const received = [];
+            helperNode.on('input', (msg) => received.push(msg));
+
+            const opNode = helper.getNode(opId);
+            const errorSpy = jest.spyOn(opNode, 'error');
+
+            opNode.receive({ payload: { Name: 'No SObject' } });
+
+            await waitFor(() => errorSpy.mock.calls.length > 0);
+            await wait(20);
+
+            expect(received).toHaveLength(0);
+            expect(errorSpy).toHaveBeenCalledWith(
+                'Salesforce sObject is required for create',
+                expect.objectContaining({ payload: { Name: 'No SObject' } })
+            );
+        });
+
         test('describes sObject metadata', async () => {
             const configId = 'config-describe';
             const opId = 'op-describe';
@@ -385,7 +460,6 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
                 },
                 { id: helperId, type: 'helper', z: flowId },
             ];
-
             await helper.load([configNode, apexNode], flow, { [configId]: CREDENTIALS });
 
             const payload = { foo: 'bar' };
@@ -402,6 +476,55 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
 
             const conn = jsforce.__mock.connections[0];
             expect(conn.apex.post).toHaveBeenCalledWith('/services/apexrest/Example', payload);
+        });
+
+        test('reports errors without emitting message', async () => {
+            const configId = 'config-apex-error';
+            const apexId = 'apex-error-node';
+            const helperId = 'helper-apex-error';
+            const flowId = 'flow-apex-error';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Apex Error Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: apexId,
+                    type: 'salesforce-apex',
+                    name: 'apex-error',
+                    salesforce: configId,
+                    path: '/services/apexrest/Example',
+                    operation: 'unknown',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, apexNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const received = [];
+            helperNode.on('input', (msg) => received.push(msg));
+
+            const apex = helper.getNode(apexId);
+            const errorSpy = jest.spyOn(apex, 'error');
+
+            apex.receive({ payload: { foo: 'bar' } });
+
+            await waitFor(() => errorSpy.mock.calls.length > 0);
+            await wait(20);
+
+            expect(received).toHaveLength(0);
+            expect(errorSpy).toHaveBeenCalledWith(
+                'Unsupported Apex operation: unknown',
+                expect.objectContaining({ payload: { foo: 'bar' } })
+            );
         });
     });
 
@@ -452,9 +575,112 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
             const resource = conn._resources['/feeds/news/me'];
             expect(resource.retrieve).toHaveBeenCalled();
         });
+
+        test('reports errors without emitting message', async () => {
+            const configId = 'config-chatter-error';
+            const chatterId = 'chatter-error-node';
+            const helperId = 'helper-chatter-error';
+            const flowId = 'flow-chatter-error';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Chatter Error Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: chatterId,
+                    type: 'salesforce-chatter',
+                    name: 'chatter-error',
+                    salesforce: configId,
+                    path: '/feeds/news/me',
+                    operation: 'invalid',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, chatterNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const received = [];
+            helperNode.on('input', (msg) => received.push(msg));
+
+            const chatter = helper.getNode(chatterId);
+            const errorSpy = jest.spyOn(chatter, 'error');
+
+            chatter.receive({ payload: { foo: 'bar' } });
+
+            await waitFor(() => errorSpy.mock.calls.length > 0);
+            await wait(20);
+
+            expect(received).toHaveLength(0);
+            expect(errorSpy).toHaveBeenCalledWith(
+                'Unsupported Chatter operation: invalid',
+                expect.objectContaining({ payload: { foo: 'bar' } })
+            );
+        });
     });
 
     describe('salesforce-stream', () => {
+        test('reports invalid replay configuration without emitting message', async () => {
+            const configId = 'config-stream-error';
+            const streamId = 'stream-error-node';
+            const helperId = 'helper-stream-error';
+            const flowId = 'flow-stream-error';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Stream Error Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: streamId,
+                    type: 'salesforce-stream',
+                    name: 'stream-error',
+                    salesforce: configId,
+                    topic: '/topic/ExampleTopic',
+                    replayId: 'bogus',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, streamNode], flow, { [configId]: CREDENTIALS });
+
+            const helperNode = helper.getNode(helperId);
+            const received = [];
+            helperNode.on('input', (msg) => received.push(msg));
+
+            await waitFor(() => {
+                const calls = helper.log().getCalls();
+                return calls.some((call) => {
+                    const [logEvent] = call.args || [];
+                    return (
+                        logEvent &&
+                        logEvent.level === helper.log().ERROR &&
+                        logEvent.id === streamId &&
+                        typeof logEvent.msg === 'string' &&
+                        logEvent.msg.includes(
+                            'Replay Id must be an integer or "latest"/"all" keyword'
+                        )
+                    );
+                });
+            }, { timeout: 1000 });
+
+            expect(received).toHaveLength(0);
+            expect(jsforce.__mock.connections.length).toBe(0);
+        });
+
         test('subscribes to topic and forwards events', async () => {
             const configId = 'config-stream';
             const streamId = 'stream-node';
@@ -487,6 +713,7 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
 
             await waitFor(() => jsforce.__mock.connections.length > 0);
             const conn = jsforce.__mock.connections[0];
+            await waitFor(() => conn._streamingClients.length > 0, { timeout: 1000 });
             await waitFor(() => conn._subscriptions.length > 0, { timeout: 1000 });
 
             const helperNode = helper.getNode(helperId);
@@ -496,11 +723,24 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
 
             const subscription = conn._subscriptions[0];
             expect(subscription.replayId).toBe(42);
+            const client = conn._streamingClients[0];
+            expect(conn.streaming.createClient).toHaveBeenCalled();
+            expect(client).toBeDefined();
+            expect(Array.isArray(client._extensions)).toBe(true);
+            expect(client._extensions).toHaveLength(1);
+            expect(client._extensions[0]._channel).toBe('/topic/ExampleTopic');
+            expect(client._extensions[0]._replay).toBe(42);
+            expect(client.subscribe).toHaveBeenCalledWith(
+                '/topic/ExampleTopic',
+                expect.any(Function)
+            );
+
             subscription.handler({ event: { replayId: 1 }, sobject: { Id: 'evt' } });
 
             const msg = await messagePromise;
             expect(msg.payload.sobject.Id).toBe('evt');
-            expect(conn.streaming.topic).toHaveBeenCalledWith('/topic/ExampleTopic');
+
+            subscription.handler({ event: { replayId: 1 }, sobject: { Id: 'evt' } });
         });
 
         test('subscribes to generic channel paths', async () => {
@@ -535,11 +775,81 @@ describe('@kyuda/node-red-contrib-salesforce nodes', () => {
 
             await waitFor(() => jsforce.__mock.connections.length > 0);
             const conn = jsforce.__mock.connections[0];
+            await waitFor(() => conn._streamingClients.length > 0, { timeout: 1000 });
             await waitFor(() => conn._subscriptions.length > 0, { timeout: 1000 });
 
             const subscription = conn._subscriptions[0];
-            expect(conn.streaming.channel).toHaveBeenCalledWith('/event/Example__e');
             expect(subscription.replayId).toBe(-1);
+            expect(conn.streaming.createClient).toHaveBeenCalled();
+            const client = conn._streamingClients[0];
+            expect(client._extensions[0]._channel).toBe('/event/Example__e');
+            expect(client.subscribe).toHaveBeenCalledWith(
+                '/event/Example__e',
+                expect.any(Function)
+            );
+        });
+
+        test('resubscribes after subscription error', async () => {
+            const configId = 'config-stream-retry';
+            const streamId = 'stream-retry-node';
+            const helperId = 'helper-stream-retry';
+            const flowId = 'flow-stream-retry';
+            const flow = [
+                { id: flowId, type: 'tab', label: 'Stream Retry Flow' },
+                {
+                    id: configId,
+                    type: 'salesforce-config',
+                    name: 'SF',
+                    loginType: 'Username-Password',
+                    loginUrl: 'https://login.salesforce.com',
+                    username: 'user@example.com',
+                },
+                {
+                    id: streamId,
+                    type: 'salesforce-stream',
+                    name: 'stream-retry',
+                    salesforce: configId,
+                    topic: '/topic/ExampleTopic',
+                    replayId: '-1',
+                    z: flowId,
+                    wires: [[helperId]],
+                },
+                { id: helperId, type: 'helper', z: flowId },
+            ];
+
+            await helper.load([configNode, streamNode], flow, { [configId]: CREDENTIALS });
+
+            const stream = helper.getNode(streamId);
+            const config = helper.getNode(configId);
+            const withConnectionSpy = jest.spyOn(config, 'withConnection');
+
+            try {
+                // Speed up retry loop for testing
+                stream._baseReconnectDelay = 10;
+
+                await waitFor(() => jsforce.__mock.connections.length > 0);
+                const conn = jsforce.__mock.connections[0];
+                await waitFor(() => conn._subscriptions.length > 0, { timeout: 1000 });
+
+                const subscription = conn._subscriptions[0];
+
+                const initialSubscriptionCount = conn._subscriptions.length;
+                const initialWithConnectionCalls = withConnectionSpy.mock.calls.length;
+
+                subscription.emit('error', new Error('simulated disconnect'));
+
+                await waitFor(
+                    () => conn._subscriptions.length > initialSubscriptionCount,
+                    { timeout: 500 }
+                );
+
+                expect(conn._subscriptions.length).toBeGreaterThan(initialSubscriptionCount);
+                expect(withConnectionSpy.mock.calls.length).toBeGreaterThan(
+                    initialWithConnectionCalls
+                );
+            } finally {
+                withConnectionSpy.mockRestore();
+            }
         });
     });
 });

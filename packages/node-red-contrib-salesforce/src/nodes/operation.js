@@ -238,7 +238,6 @@ module.exports = function (RED) {
                 msg.error = err;
                 status.error(node, err.message);
                 node.error(err.message, msg);
-                send(msg);
                 done(err);
             }
         });
