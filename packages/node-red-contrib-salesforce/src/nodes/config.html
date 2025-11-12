@@ -4,7 +4,8 @@
     defaults: {
       loginUrl: { value: "https://login.salesforce.com", required: true },
       loginType: { value: "Username-Password", required: true  },
-      username: { value: '', required: true }
+      username: { value: '', required: true },
+      apiVersion: { value: '' }
     },
     credentials: {
       password: { type: 'password' },
@@ -64,6 +65,9 @@
         $("#node-config-force-client-keys").show();
         $("#node-config-force").hide();
       }
+
+      var apiVersion = this.apiVersion || (this.credentials && this.credentials.apiVersion) || "61.0";
+      $("#node-config-input-apiVersion").val(apiVersion);
 
       $("#node-config-start-auth").mousedown(function () {
         var clientId = $("#node-config-input-clientId").val();
@@ -143,6 +147,10 @@
           <option value="https://login.salesforce.com">Production(login.salesforce.com)</option>
           <option value="https://test.salesforce.com">Sandbox(test.salesforce.com)</option>
         </select>
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-apiVersion"><i class="fa fa-code"></i> API Version</label>
+        <input type="text" id="node-config-input-apiVersion" placeholder="61.0" />
       </div>
       <div class="form-row">
         <label for="node-config-input-username"><i class="fa fa-bookmark"></i> User Name</label>

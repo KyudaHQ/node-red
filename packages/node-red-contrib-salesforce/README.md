@@ -4,7 +4,17 @@
 ![Release](https://img.shields.io/npm/v/@kyuda/node-red-contrib-salesforce.svg)
 ![NPM](https://img.shields.io/npm/dm/@kyuda/node-red-contrib-salesforce.svg)
 
-This module leverages the [jsforce](https://jsforce.github.io/) client library to bring Salesforce awesomeness to Node-RED!
+This module leverages the [JSforce](https://github.com/jsforce/jsforce) client library (v3) to bring Salesforce awesomeness to Node-RED!
+
+## What’s Included
+- Config node supporting Username/Password and OAuth 2.0 flows with automatic token refresh.
+- Runtime nodes for CRUD operations, SOQL/SOSL, metadata describes, Apex REST invocations, Chatter API calls, and Streaming events.
+- Stream listeners now support replay Ids and EMP channel paths (topics, platform events, change data capture).
+- Updated for JSforce v3 with promise-based internals and improved error handling.
+
+## API Version
+- Default Salesforce API version is 61.0 so streaming payloads include newer fields such as `EventUuid`.
+- Override the API version per config node in the editor when connecting to older orgs that require it.
 
 ## Credits
 

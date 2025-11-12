@@ -5,6 +5,7 @@
       defaults: {
         salesforce: { type: 'salesforce-config', required: true },
         topic: { value: '' },
+        replayId: { value: '' },
         name: { value: '' }
       },
       inputs: 0,
@@ -30,6 +31,10 @@
       <label for="node-input-topic"><i class="fa fa-table"></i> Topic</label>
       <input type="text" id="node-input-topic" placeholder="Topic">
     </div>
+    <div class="form-row">
+      <label for="node-input-replayId"><i class="fa fa-history"></i> Replay Id</label>
+      <input type="text" id="node-input-replayId" placeholder="latest | -1 | 123">
+    </div>
   
     <div class="form-row">
       <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -38,5 +43,7 @@
   </script>
   
   <script type="text/x-red" data-help-name="salesforce-stream" data-lang="en-US">
-    
+    <p>Subscribe to Salesforce Streaming API channels (CometD/EMP). Configure the channel path (e.g. <code>/topic/Updates</code>, <code>/event/MyEvent__e</code>, or <code>/data/ChangeEvents</code>).</p>
+    <p>Optional <strong>Replay Id</strong> accepts an integer offset or keywords <code>latest</code> (<code>-1</code>) and <code>all</code> (<code>-2</code>) to control event replay behaviour.</p>
+    <p>The node outputs each inbound event on <code>msg.payload</code> and automatically applies the configured connection, replay Id, and auto-retry logic.</p>
   </script>

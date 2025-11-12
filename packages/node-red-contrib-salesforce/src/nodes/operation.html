@@ -25,14 +25,23 @@
         var extel = $(".input-extname-row");
         var sobjel = $(".input-sobject-row");
         var maxfetchel = $(".input-maxfetch-row");
-        $("#node-input-operation").change(function () {
+
+        function toggleFields() {
           var id = $("#node-input-operation option:selected").val();
-          if (id == 'query') {
+          if (id === 'query') {
             extel.hide();
             sobjel.hide();
             maxfetchel.show();
-          } else if (id == 'upsert') {
+          } else if (id === 'upsert') {
             extel.show();
+            sobjel.show();
+            maxfetchel.hide();
+          } else if (id === 'search' || id === 'describeglobal') {
+            extel.hide();
+            sobjel.hide();
+            maxfetchel.hide();
+          } else if (id === 'retrieve' || id === 'describe') {
+            extel.hide();
             sobjel.show();
             maxfetchel.hide();
           } else {
@@ -40,7 +49,10 @@
             sobjel.show();
             maxfetchel.hide();
           }
-        });
+        }
+
+        toggleFields();
+        $("#node-input-operation").change(toggleFields);
       }
     });
   </script>
@@ -54,10 +66,14 @@
       <label for="node-input-operation"><i class="fa fa-wrench"></i> Operation</label>
       <select type="text" id="node-input-operation">
         <option value="query">Query</option>
+        <option value="search">Search</option>
         <option value="create">Create</option>
         <option value="update">Update</option>
         <option value="upsert">Upsert</option>
         <option value="delete">Delete</option>
+        <option value="retrieve">Retrieve</option>
+        <option value="describe">Describe</option>
+        <option value="describeglobal">Describe Global</option>
       </select>
     </div>
     <div class="form-row input-sobject-row hidden">
@@ -80,67 +96,28 @@
   </script>
   
   <script type="text/x-red" data-help-name="salesforce-operation" data-lang="en-US">
-      <p>force.com node. Execute the following process selected in <code>Operation</code></p>
+      <p>Perform Salesforce data operations with JSforce. Select the API action from <code>Operation</code> and supply any required inputs via the edit dialog or message properties.</p>
+
+      <h3>Supported operations</h3>
       <ul>
-        <li>Query</li>
-        <li>Create</li>
-        <li>Update</li>
-        <li>Create / Update</li>
-        <li>Delete</li>
+        <li><strong>Query</strong> – run SOQL from <code>msg.payload</code>; set <code>MaxFetch</code> to limit results.</li>
+        <li><strong>Search</strong> – run SOSL from <code>msg.payload</code>; returns matching records.</li>
+        <li><strong>Create</strong>, <strong>Update</strong>, <strong>Upsert</strong>, <strong>Delete</strong> – mutate records in the selected sObject. Provide the payload as an object or array.</li>
+        <li><strong>Retrieve</strong> – load records by Id (string or array) for the selected sObject.</li>
+        <li><strong>Describe</strong> – return metadata for the selected sObject.</li>
+        <li><strong>Describe Global</strong> – return the org-wide describe result.</li>
       </ul>
-  
-      <h3>Inputs</h3>
-        <dl class="message-properties">
-          <dt class="optional">payload
-            <span class="property-type">string | array | object</span>
-          </dt>
-          <dd> Inputs the data for execute the selected process. </dd>
-        </dl>
-  
+
+      <h3>Message properties</h3>
+      <dl class="message-properties">
+        <dt class="optional">payload <span class="property-type">string | array | object</span></dt>
+        <dd>SOQL/SOSL text or record data/Ids depending on the selected operation.</dd>
+        <dt class="optional">sobject <span class="property-type">string</span></dt>
+        <dd>Overrides the configured sObject API name.</dd>
+        <dt class="optional">extname <span class="property-type">string</span></dt>
+        <dd>External Id field used for upsert.</dd>
+      </dl>
+
       <h3>Outputs</h3>
-        <dl class="message-properties">
-          <dt>payload <span class="property-type">array | object</span></dt>
-          <dd>Outputs the execution result of the selected process.</dd>
-        </dl>
-  
-      <h3>Details</h3>
-      <h4>Query</h4>
-        <p>Execute search with SOQL query received in <code>msg.payload</code>. The property type that can be received is a <code>string</code>.</p>
-        <p> <code>msg.payload = "select Id, Name from Account";</code></p>
-        <p> Set the number of records to be acquired in <code>MaxFetch</code>. When <code>MaxFetch</code> is not set, a maximum of 10,000 records will be acquired.</p>
-        <p>The retrieved search results are stored in <code>msg.payload</code> as a json object and output.</p>
-  
-      <h4>Create: </h4>
-        <p> Create new data in the set Object based on json object data received by <code>msg.payload</code>. Property type is <code>object</code> or <code>array</code>.</p>
-        <p> <code>msg.payload = {Name: 'hoge'};</code><br>
-        <code>msg.payload = [{Name: 'hoge'},{Name: 'fuga'}];</code></p>
-        <p> Set the object name (API Name) of the object for which you want to Create data in <code>sObject</code>.</p>
-        <p>The execution results of creation are stored in <code>msg.payload</code> as a json object and output.</p>
-  
-      <h4>Update: </h4>
-        <p> Update the data based on the json object data received in <code>msg.payload</code>. Property type is <code>object</code> or <code>array</code>.</p>
-        <p> <code>msg.payload = {Id: '00000', Name: 'hogehoge'};</code><br>
-        <code>msg.payload = [{Id: '00000', Name: 'hogehoge'},{Id: '11111', Name: 'fugafuga'}];</code></p>
-        <p> Set the object name (API Name) of the object whose data is to be updated in <code>sObject</code>.</p>
-        <p>The execution results of update are stored in <code>msg.payload</code> as a json object and output.</p>
-  
-      <h4>Create / Update: </h4>
-        <p> Create or Update data based on json object data received by <code>msg.payload</code>. Property type is <code>object</code> or <code>array</code>.</p>
-        <p> <code>msg.payload = {key__c: 'key1', Name: 'hoge'};</code><br>
-        <code>msg.payload = [{key__c: 'key1', Name: 'hoge'},{key__c: 'key2', Name: 'fuga'}];</code></p>
-        <p>In <code>sObject</code>, set the object name (API Name) of the object to create or update data.</p>
-        <p>In <code>ExtID Field</code>, set the field name (API Name) of the external ID field that is the key to determine data creation or update.</p>
-        <p>The execution results of creation or update are stored in <code>msg.payload</code> as a json object and output.</p>
-  
-      <h4>Delete: </h4>
-        <p> Delete data based on json object data received in <code>msg.payload</code>. Property type is <code>string</code> or <code>array</code>.</p>
-        <p> <code>msg.payload = "['00000']";</code><br>
-        <code>msg.payload = ['00000', '11111'];</code></p>
-        <p> Set the object name (API Name) of the object whose data is to be deleted in <code>sObject</code>.</p>
-        <p>The execution results of deletion are stored in <code>msg.payload</code> as a json object and output.</p>
-  
-      <p>It is convenient to use the execution results of the force node (query) for the object Id of the data to be entered when updating or deleting.</p>
-      <pre>msg.record = msg.payload;
-  msg.payload = { Id: msg.record[0].Id };</pre>
-  
+      <p>The node writes the API result to <code>msg.payload</code>. For SOQL and SOSL operations, metadata (total size, matches, etc.) is provided in <code>msg.sfResponse</code>.</p>
   </script>
